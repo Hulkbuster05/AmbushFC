@@ -49,12 +49,13 @@ export default function App() {
   }
 
   const unirse = async (partidoId, equipo) => {
-    await supabase.from('partido_jugadores').insert({
-      partido_id: partidoId,
-      usuario_id: user.id,
-      equipo
-    })
-  }
+  await supabase.from('partido_jugadores').insert({
+    partido_id: partidoId,
+    usuario_id: user.id,
+    equipo,
+    nombre: user.user_metadata.full_name || user.email
+  })
+}
 
   const cerrarSesion = async () => {
     await supabase.auth.signOut()
@@ -186,119 +187,102 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
 function PartidoEnVivo({ partido, volver }) {
   const [golesA, setGolesA] = useState(0)
   const [golesB, setGolesB] = useState(0)
+  const [jugadoresA, setJugadoresA] = useState([])
+  const [jugadoresB, setJugadoresB] = useState([])
 
-  const cargarGoles = async () => {
-    const { data, error } = await supabase
+  const cargarTodo = async () => {
+    // Goles
+    const { data: goles } = await supabase
       .from('goles')
-      .select('equipo')
+      .select('*')
       .eq('partido_id', partido.id)
 
-    if (error) {
-      console.log(error)
-      return
-    }
+    setGolesA(goles.filter(g => g.equipo === 'A').length)
+    setGolesB(goles.filter(g => g.equipo === 'B').length)
 
-    const safe = data || []
+    // Jugadores
+    const { data: jugadores } = await supabase
+      .from('partido_jugadores')
+      .select('nombre, equipo')
+      .eq('partido_id', partido.id)
 
-    setGolesA(safe.filter(g => g.equipo === 'A').length)
-    setGolesB(safe.filter(g => g.equipo === 'B').length)
+    setJugadoresA(jugadores.filter(j => j.equipo === 'A'))
+    setJugadoresB(jugadores.filter(j => j.equipo === 'B'))
   }
 
   useEffect(() => {
-    cargarGoles()
+    cargarTodo()
 
     const canal = supabase
-      .channel('realtime-goles-' + partido.id)
+      .channel('realtime-full-' + partido.id)
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'goles',
-          filter: `partido_id=eq.${partido.id}`
-        },
-        () => cargarGoles()
+        { event: '*', schema: 'public', table: 'goles', filter: `partido_id=eq.${partido.id}` },
+        () => cargarTodo()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'partido_jugadores', filter: `partido_id=eq.${partido.id}` },
+        () => cargarTodo()
       )
       .subscribe()
 
     return () => supabase.removeChannel(canal)
   }, [partido.id])
 
-  // ⚽ SUMAR GOL (FIXED)
   const sumarGol = async (equipo) => {
-    const { error } = await supabase.from('goles').insert({
-      partido_id: partido.id,
-      equipo
-    })
+    await supabase.from('goles').insert({ partido_id: partido.id, equipo })
+  }
 
-    if (error) {
-      console.log("Error sumando gol:", error)
-      return
+  const restarGol = async (equipo) => {
+    const { data } = await supabase
+      .from('goles')
+      .select('id')
+      .eq('partido_id', partido.id)
+      .eq('equipo', equipo)
+      .order('id', { ascending: false })
+      .limit(1)
+
+    if (data.length > 0) {
+      await supabase.from('goles').delete().eq('id', data[0].id)
     }
   }
-
-  // ⚽ RESTAR GOL (FIXED — MÁS SEGURO)
-const restarGol = async (equipo) => {
-  console.log("Intentando restar gol equipo:", equipo)
-
-  const { data, error } = await supabase
-    .from('goles')
-    .select('id, created_at')
-    .eq('partido_id', partido.id)
-    .eq('equipo', equipo)
-    .order('created_at', { ascending: false })
-    .limit(1)
-
-  console.log("Gol encontrado para borrar:", data, error)
-
-  if (error) {
-    console.log("ERROR SELECT:", error)
-    return
-  }
-
-  if (!data || data.length === 0) {
-    console.log("No hay goles para borrar")
-    return
-  }
-
-  const deleteRes = await supabase
-    .from('goles')
-    .delete()
-    .eq('id', data[0].id)
-
-  console.log("Resultado DELETE:", deleteRes)
-}
-
 
   return (
     <Pantalla>
       <h1 style={styles.brandSmall}>Partido en Vivo</h1>
 
-      <div style={styles.scoreBoard}>
+      {/* MARCADOR */}
+      <div style={styles.scorePro}>
         <div>
           <h2>BLUE</h2>
-          <h1 style={{ fontSize: 60 }}>{golesA}</h1>
-
-          <button style={styles.blueBtn} onClick={() => sumarGol('A')}>
-            +
-          </button>
-
-          <button style={styles.secondaryBtn} onClick={() => restarGol('A')}>
-            −
-          </button>
+          <h1 style={styles.score}>{golesA}</h1>
+          <button style={styles.blueBtn} onClick={() => sumarGol('A')}>+</button>
+          <button style={styles.secondaryBtn} onClick={() => restarGol('A')}>−</button>
         </div>
 
         <div>
           <h2>RED</h2>
-          <h1 style={{ fontSize: 60 }}>{golesB}</h1>
+          <h1 style={styles.score}>{golesB}</h1>
+          <button style={styles.redBtn} onClick={() => sumarGol('B')}>+</button>
+          <button style={styles.secondaryBtn} onClick={() => restarGol('B')}>−</button>
+        </div>
+      </div>
 
-          <button style={styles.redBtn} onClick={() => sumarGol('B')}>
-            +
-          </button>
+      {/* JUGADORES */}
+      <div style={styles.playersContainer}>
+        <div>
+          <h3>BLUE</h3>
+          {jugadoresA.map((j, i) => (
+            <p key={i}>• {j.nombre}</p>
+          ))}
+        </div>
 
-          <button style={styles.secondaryBtn} onClick={() => restarGol('B')}>
-            −
-          </button>
+        <div>
+          <h3>RED</h3>
+          {jugadoresB.map((j, i) => (
+            <p key={i}>• {j.nombre}</p>
+          ))}
         </div>
       </div>
 
@@ -411,5 +395,21 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-around',
     marginTop: 40
+  },
+  scorePro: {
+  display: 'flex',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+  marginTop: 30
+  },
+  score: {
+  fontSize: 80,
+  margin: '10px 0'
+  },
+  playersContainer: {
+  display: 'flex',
+  justifyContent: 'space-around',
+  marginTop: 40,
+  textAlign: 'left'
   }
 }
