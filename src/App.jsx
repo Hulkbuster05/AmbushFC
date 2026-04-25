@@ -742,22 +742,48 @@ setMvp(ranking[0] || null)
     cargarStats()
   }, [])
 
-  const renderTabla = (titulo, tabla) => (
-    <div style={{ marginBottom: 30 }}>
-      <h3>{titulo}</h3>
+ const renderTabla = (titulo, tabla) => (
+  <div style={{ marginBottom: 30 }}>
+    <h3>{titulo}</h3>
 
+    <div style={{
+      display: 'flex',
+      gap: 15,
+      flexWrap: 'wrap'
+    }}>
       {tabla.map((t, i) => (
         <div key={i} style={{
           background: '#0006',
-          padding: 10,
-          margin: '5px 0',
-          borderRadius: 8
+          padding: 15,
+          borderRadius: 12,
+          minWidth: 150,
+          textAlign: 'center',
+          flex: '1'
         }}>
-          {t.nombre} | PJ: {t.PJ} | G: {t.G} | E: {t.E} | P: {t.P} | GF: {t.GF} | GC: {t.GC}
+          <h4 style={{ marginBottom: 10 }}>{t.nombre}</h4>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: 14
+          }}>
+            <span>PJ {t.PJ}</span>
+            <span>G {t.G}</span>
+            <span>E {t.E}</span>
+            <span>P {t.P}</span>
+          </div>
+
+          <div style={{
+            marginTop: 10,
+            fontSize: 14
+          }}>
+            ⚽ {t.GF} | 🥅 {t.GC}
+          </div>
         </div>
       ))}
     </div>
-  )
+  </div>
+)
 
 return (
   <div>
