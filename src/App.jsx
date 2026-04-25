@@ -700,28 +700,43 @@ function Stats() {
     const partidosColon = partidos.filter(p => p.cancha === 'Colon')
     setTablaColon(calcularTabla(partidosColon, goles))
 
-  // ⚽ STATS JUGADORES
-    const conteo = {}
+const conteo = {}
 
-    goles.forEach(g => {
-      if (!conteo[g.usuario_id]) {
-        conteo[g.usuario_id] = {
-          nombre: g.jugador,
-          goles: 0
-      }
+goles.forEach(g => {
+  if (!conteo[g.usuario_id]) {
+    conteo[g.usuario_id] = {
+      nombre: g.jugador,
+      goles: 0,
+      americano: 0,
+      colon: 0
     }
+  }
 
-      conteo[g.usuario_id].goles++
-  })
+  conteo[g.usuario_id].goles++
 
-  const ranking = Object.values(conteo)
-    .sort((a, b) => b.goles - a.goles)
+  // 🔥 identificar cancha
+  const partido = partidos.find(p => p.id === g.partido_id)
 
-  setGoleadores(ranking)
+  if (partido?.cancha === 'Americano') {
+    conteo[g.usuario_id].americano++
+  }
 
-  // 🥇 MVP GLOBAL
-  setMvp(ranking[0] || null)
-}
+  if (partido?.cancha === 'Colon') {
+    conteo[g.usuario_id].colon++
+  }
+})
+
+// 🔥 convertir a array
+const ranking = Object.values(conteo)
+  .map(j => ({
+    ...j,
+    promedio: (j.goles / (partidos.length || 1)).toFixed(2)
+  }))
+  .sort((a, b) => b.goles - a.goles)
+
+setGoleadores(ranking)
+setMvp(ranking[0] || null)
+  }
 
   useEffect(() => {
     cargarStats()
@@ -744,35 +759,81 @@ function Stats() {
     </div>
   )
 
-  return (
-    <div>
-      <h2>📊 Estadísticas</h2>
+return (
+  <div>
+
+    <h2 style={{ textAlign: 'center' }}>📊 Dashboard</h2>
+
+    {/* 🏆 EQUIPOS */}
+    <section>
+      <h3>🏆 Equipos</h3>
 
       {renderTabla('🌍 Global', tablaGlobal)}
       {renderTabla('🏟️ Americano', tablaAmericano)}
       {renderTabla('🏟️ Colón', tablaColon)}
+    </section>
 
-      <h2>⚽ Goleadores</h2>
+    {/* ⚽ JUGADORES */}
+    <section style={{ marginTop: 40 }}>
+      <h3>⚽ Jugadores</h3>
 
       {goleadores.map((g, i) => (
         <div key={i} style={{
-        background: '#0006',
-        padding: 10,
-        margin: '5px 0',
-    borderRadius: 8
-  }}>
-    #{i + 1} {g.nombre} - {g.goles} goles
+          background: i === 0 ? '#FFD70033' : '#0006',
+          padding: 12,
+          margin: '6px 0',
+          borderRadius: 10
+        }}>
+          <strong>#{i + 1} {g.nombre}</strong><br />
+
+          ⚽ {g.goles} goles<br />
+          📊 Promedio: {g.promedio}<br />
+          🏟️ Colón: {g.colon} | Americano: {g.americano}
+        </div>
+      ))}
+    </section>
+
+    {/* 🥇 MVP */}
+    {mvp && (
+      <section style={{ marginTop: 40 }}>
+        <h3>🥇 MVP Global</h3>
+
+        <div style={{
+          background: '#FFD70055',
+          padding: 15,
+          borderRadius: 12
+        }}>
+          <strong>{mvp.nombre}</strong><br />
+          {mvp.goles} goles
+        </div>
+      </section>
+    )}
+
+    {/* 📊 GRÁFICA */}
+    <section style={{ marginTop: 40 }}>
+      <h3>📊 Goles por jugador</h3>
+
+      {goleadores.slice(0, 5).map((g, i) => (
+        <div key={i} style={{ marginBottom: 8 }}>
+          {g.nombre}
+          <div style={{
+            height: 10,
+            background: '#333',
+            borderRadius: 5
+          }}>
+            <div style={{
+              width: `${g.goles * 10}px`,
+              height: '100%',
+              background: '#00ff88',
+              borderRadius: 5
+            }} />
+          </div>
+        </div>
+      ))}
+    </section>
+
   </div>
-))}
-
-      {mvp && (
-  <h2 style={{ marginTop: 20 }}>
-    🏆 MVP Global: {mvp.nombre} ({mvp.goles} goles)
-  </h2>
-)}
-
-    </div>
-  )
+)
 }
 
 const styles = {
