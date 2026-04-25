@@ -68,21 +68,26 @@ export default function App() {
     .eq('usuario_id', user.id)
 }
 
-  if (!user) {
-    return (
-      <Pantalla>
-        <h1 style={styles.brand}>Derbys Ambush FC</h1>
-        <button
-          style={styles.primaryBtn}
-          onClick={() =>
-            supabase.auth.signInWithOAuth({ provider: 'google' })
-          }
-        >
-          Entrar con Google
-        </button>
-      </Pantalla>
-    )
-  }
+if (!user) {
+  return (
+    <Pantalla>
+      <h1 style={styles.brand}>Derbys Ambush FC</h1>
+
+      <AuthEmail />
+
+      <br />
+
+      <button
+        style={styles.primaryBtn}
+        onClick={() =>
+          supabase.auth.signInWithOAuth({ provider: 'google' })
+        }
+      >
+        Entrar con Google
+      </button>
+    </Pantalla>
+  )
+}
 
   if (partidoEnVivo) {
     return (
@@ -509,6 +514,75 @@ function Pantalla({ children }) {
   )
 }
 
+function AuthEmail() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [modo, setModo] = useState('login') // login | register
+
+  const handleAuth = async () => {
+    if (modo === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) alert(error.message)
+    } else {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password
+      })
+
+      if (error) {
+        alert(error.message)
+      } else {
+        alert("Cuenta creada, ahora inicia sesión")
+        setModo('login')
+      }
+    }
+  }
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+      maxWidth: 300,
+      margin: 'auto'
+    }}>
+      <input
+        placeholder="Correo"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={styles.input}
+      />
+
+      <input
+        type="password"
+        placeholder="Contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={styles.input}
+      />
+
+      <button style={styles.primaryBtn} onClick={handleAuth}>
+        {modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+      </button>
+
+      <button
+        style={styles.secondaryBtn}
+        onClick={() =>
+          setModo(modo === 'login' ? 'register' : 'login')
+        }
+      >
+        {modo === 'login'
+          ? '¿No tienes cuenta? Regístrate'
+          : '¿Ya tienes cuenta? Inicia sesión'}
+      </button>
+    </div>
+  )
+}
+
 const styles = {
   bg: {
     backgroundImage: `url(${fondo})`,
@@ -630,3 +704,4 @@ const styles = {
     border: 'none'
   }
 }
+
