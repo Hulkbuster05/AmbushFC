@@ -280,8 +280,8 @@ useEffect(() => {
 }
 
 function PartidoEnVivo({ partido, volver }) {
-  const [golesA, setGolesA] = useState(0)
-  const [golesB, setGolesB] = useState(0)
+  const golesA = goles.filter(g => g.equipo === 'A').length
+  const golesB = goles.filter(g => g.equipo === 'B').length
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
   const [goles, setGoles] = useState([])
