@@ -305,8 +305,9 @@ function PartidoEnVivo({ partido, volver }) {
 
   setJugadoresA(jugadores.filter(j => j.equipo === 'A'))
   setJugadoresB(jugadores.filter(j => j.equipo === 'B'))
+}
 
-  const registrarGol = async (equipo, jugador) => {
+ const registrarGol = async (equipo, jugador) => {
   const minuto = prompt("Minuto del gol (ej: 23)")
 
   if (!minuto) return
@@ -319,7 +320,6 @@ function PartidoEnVivo({ partido, volver }) {
   })
 
   cargarTodo()
-}
 }
 
   useEffect(() => {
