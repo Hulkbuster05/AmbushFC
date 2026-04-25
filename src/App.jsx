@@ -334,17 +334,41 @@ useEffect(() => {
   <strong>Jugadores:</strong>
 
   <div>
+   <div style={{ marginTop: 10 }}>
+  <strong>Jugadores:</strong>
+
+  <div style={{ marginTop: 5 }}>
     <small>BLUE:</small>
-    {jugadoresA.map((j, i) => (
-      <span key={i}> {j.nombre},</span>
-    ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {jugadoresA.map((j, i) => (
+        <div key={i} style={{
+          background: '#001f3f',
+          padding: '4px 8px',
+          borderRadius: 6,
+          fontSize: 12
+        }}>
+          {j.nombre}
+        </div>
+      ))}
+    </div>
   </div>
 
-  <div>
+  <div style={{ marginTop: 5 }}>
     <small>RED:</small>
-    {jugadoresB.map((j, i) => (
-      <span key={i}> {j.nombre},</span>
-    ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {jugadoresB.map((j, i) => (
+        <div key={i} style={{
+          background: '#5a0000',
+          padding: '4px 8px',
+          borderRadius: 6,
+          fontSize: 12
+        }}>
+          {j.nombre}
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
   </div>
 
 </div>
@@ -499,9 +523,12 @@ function PartidoEnVivo({ partido, volver }) {
             <button
               key={i}
               style={styles.blueBtn}
+              display="flex"
+              justifyContent="space-between"
               onClick={() => registrarGol('A', j.nombre)}
             >
-              ⚽ {j.nombre}
+              <span></span>{j.nombre}
+              <span>⚽</span>
             </button>
           ))}
         </div>
@@ -512,9 +539,12 @@ function PartidoEnVivo({ partido, volver }) {
             <button
               key={i}
               style={styles.redBtn}
+              display="flex"
+              justifyContent="space-between"
               onClick={() => registrarGol('B', j.nombre)}
             >
-              ⚽ {j.nombre}
+              <span>{j.nombre}</span>
+              <span>⚽</span>
             </button>
           ))}
         </div>
@@ -948,19 +978,23 @@ const styles = {
     border: 'none'
   },
   blueBtn: {
-    background: '#1e90ff',
-    color: 'white',
-    padding: '10px',
-    borderRadius: 8,
-    border: 'none'
-  },
+  background: '#007bff',
+  color: 'white',
+  border: 'none',
+  padding: '10px',
+  borderRadius: 8,
+  textAlign: 'left', // 🔥 clave
+  cursor: 'pointer'
+},
   redBtn: {
-    background: '#ff2e2e',
-    color: 'white',
-    padding: '10px',
-    borderRadius: 8,
-    border: 'none'
-  },
+  background: '#ff4d4d',
+  color: 'white',
+  border: 'none',
+  padding: '10px',
+  borderRadius: 8,
+  textAlign: 'left',
+  cursor: 'pointer'
+},
   deleteBtn: {
     marginTop: 20,
     background: '#000',
@@ -994,9 +1028,9 @@ const styles = {
     marginTop: 40
   },
   teamBox: {
-    background: 'rgba(255,255,255,0.08)',
-    padding: 15,
-    borderRadius: 15
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
   },
   cardForm: {
     display: 'flex',
