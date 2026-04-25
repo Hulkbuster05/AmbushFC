@@ -419,10 +419,10 @@ function PartidoEnVivo({ partido, volver }) {
       </div>
 
       <h3 style={{ marginTop: 30 }}>Eventos del partido</h3>
-
+      {console.log(goles)}
       {goles.map((g, i) => (
   <div
-    key={i}
+    key={g.id}
     style={{
       background: '#0006',
       padding: 8,
