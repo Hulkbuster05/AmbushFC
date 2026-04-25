@@ -88,9 +88,14 @@ export default function App() {
 
     <div style={styles.header}>
       <h1 style={styles.brandSmall}>Derbys Ambush FC</h1>
-      <button style={styles.logoutBtn} onClick={() => supabase.auth.signOut()}>
-        Salir
-      </button>
+     <button
+  style={styles.logoutBtn}
+  onClick={async () => {
+    await supabase.auth.signOut()
+  }}
+>
+  Salir
+</button>
     </div>
 
     <Routes>
@@ -212,6 +217,10 @@ useEffect(() => {
   const { data: listener } = supabase.auth.onAuthStateChange(
     (_event, session) => {
       setUser(session?.user || null)
+
+      if (!session) {
+        setPartidoEnVivo(null)
+      }
     }
   )
 
