@@ -571,6 +571,7 @@ function PartidoEnVivo({ partido, volver }) {
               justifyContent="space-between"
               onClick={() => registrarGol('B', j.nombre)}
             >
+              <span>⚽</span>
               <span>{j.nombre}</span>
             </button>
           ))}
