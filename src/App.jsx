@@ -163,6 +163,7 @@ export default function App() {
           key={p.id}
           partido={p}
           unirse={unirse}
+          salirEquipo={salirEquipo}
           eliminarPartido={eliminarPartido}
           esAdmin={esAdmin}
           ver={() => setPartidoEnVivo(p)}
@@ -201,7 +202,8 @@ function MenuNavegacion() {
   )
 }
 
-function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
+function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEquipo
+ }) {
   const [conteo, setConteo] = useState({ A: 0, B: 0 })
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
