@@ -643,6 +643,7 @@ const handleAuth = async () => {
 }
 
 function Stats() {
+  const [vista, setVista] = useState('resumen')
   const [tablaGlobal, setTablaGlobal] = useState([])
   const [tablaAmericano, setTablaAmericano] = useState([])
   const [tablaColon, setTablaColon] = useState([])
@@ -790,101 +791,98 @@ return (
 
     <h2 style={{ textAlign: 'center' }}>📊 Dashboard</h2>
 
-    {/* 🏆 EQUIPOS */}
-    <section>
-      <h3>🏆 Equipos</h3>
+    {/* 🔘 BOTONES */}
+    <div style={{
+      display: 'flex',
+      gap: 10,
+      marginBottom: 20
+    }}>
+      <button onClick={() => setVista('resumen')}>🏠 Resumen</button>
+      <button onClick={() => setVista('equipos')}>📊 Equipos</button>
+      <button onClick={() => setVista('jugador')}>👤 Jugador</button>
+    </div>
 
-     <div style={{
-  display: 'flex',
-  gap: 20,
-  alignItems: 'flex-start',
-  flexWrap: 'wrap'
-}}>
+    {/* 🏠 RESUMEN */}
+    {vista === 'resumen' && (
+      <>
+        <h3>🏆 Global Equipos</h3>
+        {renderTabla('🌍 Global', tablaGlobal)}
 
-  {/* 🌍 IZQUIERDA */}
-  <div style={{
-    flex: 1,
-    minWidth: 250
-  }}>
-    {renderTabla('🌍 Global', tablaGlobal)}
-  </div>
+        <h3 style={{ marginTop: 30 }}>🥇 Top 5 Jugadores</h3>
 
-  {/* 🏟️ DERECHA */}
-  <div style={{
-    flex: 1,
-    minWidth: 250,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 20
-  }}>
-    {renderTabla('🏟️ Americano', tablaAmericano)}
-    {renderTabla('🏟️ Colón', tablaColon)}
-  </div>
-
-</div>
-    </section>
-
-    {/* ⚽ JUGADORES */}
-    <section style={{ marginTop: 40 }}>
-      <h3>⚽ Jugadores</h3>
-
-      {goleadores.map((g, i) => (
-        <div key={i} style={{
-          background: i === 0 ? '#FFD70033' : '#0006',
-          padding: 12,
-          margin: '6px 0',
-          borderRadius: 10
-        }}>
-          <strong>#{i + 1} {g.nombre}</strong><br />
-
-          ⚽ {g.goles} goles<br />
-          📊 Promedio: {g.promedio}<br />
-          🏟️ Colón: {g.colon} | Americano: {g.americano}
-        </div>
-      ))}
-    </section>
-
-    {/* 🥇 MVP */}
-    {mvp && (
-      <section style={{ marginTop: 40 }}>
-        <h3>🥇 MVP Global</h3>
-
-        <div style={{
-          background: '#FFD70055',
-          padding: 15,
-          borderRadius: 12
-        }}>
-          <strong>{mvp.nombre}</strong><br />
-          {mvp.goles} goles
-        </div>
-      </section>
+        {goleadores.slice(0, 5).map((g, i) => (
+          <div key={i} style={{
+            background: i === 0 ? '#FFD70033' : '#0006',
+            padding: 10,
+            margin: '5px 0',
+            borderRadius: 8
+          }}>
+            #{i + 1} {g.nombre} - {g.goles} goles
+          </div>
+        ))}
+      </>
     )}
 
-    {/* 📊 GRÁFICA */}
-    <section style={{ marginTop: 40 }}>
-      <h3>📊 Goles por jugador</h3>
+    {/* 📊 EQUIPOS DETALLADO */}
+    {vista === 'equipos' && (
+      <>
+        <h3>📊 Estadísticas por Cancha</h3>
 
-      {goleadores.slice(0, 5).map((g, i) => (
-        <div key={i} style={{ marginBottom: 8 }}>
-          {g.nombre}
-          <div style={{
-            height: 10,
-            background: '#333',
-            borderRadius: 5
-          }}>
-            <div style={{
-              width: `${g.goles * 10}px`,
-              height: '100%',
-              background: '#00ff88',
-              borderRadius: 5
-            }} />
-          </div>
-        </div>
-      ))}
-    </section>
+        {renderTabla('🏟️ Americano', tablaAmericano)}
+        {renderTabla('🏟️ Colón', tablaColon)}
+      </>
+    )}
+
+    {/* 👤 JUGADOR DETALLADO */}
+    {vista === 'jugador' && (
+      <JugadorDetalle goleadores={goleadores} />
+    )}
 
   </div>
 )
+}
+
+function JugadorDetalle({ goleadores }) {
+  const [jugador, setJugador] = useState(null)
+
+  return (
+    <div>
+
+      <h3>👤 Seleccionar Jugador</h3>
+
+      <select
+        style={{ padding: 10, marginBottom: 20 }}
+        onChange={(e) => {
+          const seleccionado = goleadores.find(g => g.nombre === e.target.value)
+          setJugador(seleccionado)
+        }}
+      >
+        <option value="">Seleccionar...</option>
+
+        {goleadores.map((g, i) => (
+          <option key={i} value={g.nombre}>
+            {g.nombre}
+          </option>
+        ))}
+      </select>
+
+      {jugador && (
+        <div style={{
+          background: '#0006',
+          padding: 15,
+          borderRadius: 10
+        }}>
+          <h3>{jugador.nombre}</h3>
+
+          <p>⚽ Goles: {jugador.goles}</p>
+          <p>📊 Promedio: {jugador.promedio}</p>
+          <p>🏟️ Americano: {jugador.americano}</p>
+          <p>🏟️ Colón: {jugador.colon}</p>
+        </div>
+      )}
+
+    </div>
+  )
 }
 
 const styles = {
