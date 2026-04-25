@@ -67,7 +67,10 @@ useEffect(() => {
       partido_id: partidoId,
       usuario_id: user.id,
       equipo,
-      nombre: user.user_metadata?.full_name || user.email
+      nombre:
+        user.user_metadata?.nombre ||
+        user.user_metadata?.full_name ||
+        user.email
     })
   }
 
