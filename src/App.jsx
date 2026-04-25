@@ -155,11 +155,15 @@ if (!user) {
 
         {mostrarForm && (
           <div style={styles.cardForm}>
-            <input
-              placeholder="Cancha"
+            <select
               style={styles.input}
               onChange={(e) => setCancha(e.target.value)}
-            />
+            >
+              <option value="">Seleccionar cancha</option>
+              <option value="Americano">Americano</option>
+              <option value="Colon">Colón</option>
+            </select>
+
             <input
               type="datetime-local"
               style={styles.input}
@@ -266,6 +270,9 @@ useEffect(() => {
   return (
     <div style={styles.card}>
       <h3>{partido.cancha}</h3>
+      <p style={{ margin: 0, fontSize: 14, opacity: 0.8 }}>
+  {new Date(partido.fecha_hora).toLocaleString()}
+</p>
 
       <div style={styles.row}>
     <button
@@ -636,50 +643,92 @@ const handleAuth = async () => {
 }
 
 function Stats() {
-  const [goleadores, setGoleadores] = useState([])
+  const [tablaGlobal, setTablaGlobal] = useState([])
+  const [tablaAmericano, setTablaAmericano] = useState([])
+  const [tablaColon, setTablaColon] = useState([])
 
-  const cargarStats = async () => {
-    const { data } = await supabase
-      .from('goles')
-      .select('jugador, usuario_id')
+  const calcularTabla = (partidos, goles) => {
+    const equipos = {
+      A: { nombre: 'BLUE', PJ: 0, G: 0, E: 0, P: 0, GF: 0, GC: 0 },
+      B: { nombre: 'RED', PJ: 0, G: 0, E: 0, P: 0, GF: 0, GC: 0 }
+    }
 
-    const conteo = {}
+    partidos.forEach(p => {
+      const golesPartido = goles.filter(g => g.partido_id === p.id)
 
-    data.forEach(g => {
-      if (!conteo[g.usuario_id]) {
-        conteo[g.usuario_id] = {
-          nombre: g.jugador,
-          goles: 0
-        }
+      const golesA = golesPartido.filter(g => g.equipo === 'A').length
+      const golesB = golesPartido.filter(g => g.equipo === 'B').length
+
+      equipos.A.PJ++
+      equipos.B.PJ++
+
+      equipos.A.GF += golesA
+      equipos.A.GC += golesB
+
+      equipos.B.GF += golesB
+      equipos.B.GC += golesA
+
+      if (golesA > golesB) {
+        equipos.A.G++
+        equipos.B.P++
+      } else if (golesB > golesA) {
+        equipos.B.G++
+        equipos.A.P++
+      } else {
+        equipos.A.E++
+        equipos.B.E++
       }
-
-      conteo[g.usuario_id].goles++
     })
 
-    const ranking = Object.values(conteo)
-      .sort((a, b) => b.goles - a.goles)
+    return Object.values(equipos)
+  }
 
-    setGoleadores(ranking)
+  const cargarStats = async () => {
+    const { data: partidos } = await supabase.from('partidos').select('*')
+    const { data: goles } = await supabase.from('goles').select('*')
+
+    if (!partidos || !goles) return
+
+    // 🌍 GLOBAL
+    setTablaGlobal(calcularTabla(partidos, goles))
+
+    // 🏟️ AMERICANO
+    const partidosAmericano = partidos.filter(p => p.cancha === 'Americano')
+    setTablaAmericano(calcularTabla(partidosAmericano, goles))
+
+    // 🏟️ COLON
+    const partidosColon = partidos.filter(p => p.cancha === 'Colon')
+    setTablaColon(calcularTabla(partidosColon, goles))
   }
 
   useEffect(() => {
     cargarStats()
   }, [])
 
-  return (
-    <div>
-      <h2>⚽ Goleadores</h2>
+  const renderTabla = (titulo, tabla) => (
+    <div style={{ marginBottom: 30 }}>
+      <h3>{titulo}</h3>
 
-      {goleadores.map((g, i) => (
+      {tabla.map((t, i) => (
         <div key={i} style={{
           background: '#0006',
           padding: 10,
           margin: '5px 0',
           borderRadius: 8
         }}>
-          #{i + 1} {g.nombre} - {g.goles} goles
+          {t.nombre} | PJ: {t.PJ} | G: {t.G} | E: {t.E} | P: {t.P} | GF: {t.GF} | GC: {t.GC}
         </div>
       ))}
+    </div>
+  )
+
+  return (
+    <div>
+      <h2>📊 Estadísticas</h2>
+
+      {renderTabla('🌍 Global', tablaGlobal)}
+      {renderTabla('🏟️ Americano', tablaAmericano)}
+      {renderTabla('🏟️ Colón', tablaColon)}
     </div>
   )
 }
