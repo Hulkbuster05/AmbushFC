@@ -195,12 +195,7 @@ if (!user) {
   </>
 } />
 
-      <Route path="/stats" element={
-        <div>
-          <h2>Estadísticas</h2>
-          <p>Próximamente 🔥</p>
-        </div>
-      } />
+      <Route path="/stats" element={<Stats />} />
 
     </Routes>
 
@@ -363,7 +358,6 @@ function PartidoEnVivo({ partido, volver }) {
   const [jugadoresB, setJugadoresB] = useState([])
   const [goles, setGoles] = useState([])
 
-  // 🔥 marcador derivado (pro)
   const golesA = goles.filter(g => g.equipo === 'A').length
   const golesB = goles.filter(g => g.equipo === 'B').length
 
@@ -390,10 +384,14 @@ function PartidoEnVivo({ partido, volver }) {
 
     if (!minuto) return
 
+    const { data } = await supabase.auth.getUser()
+    const user = data.user
+
     await supabase.from('goles').insert({
       partido_id: partido.id,
       equipo,
       jugador,
+      usuario_id: user.id,
       minuto: Number(minuto)
     })
 
@@ -633,6 +631,55 @@ const handleAuth = async () => {
           ? '¿No tienes cuenta? Regístrate'
           : '¿Ya tienes cuenta? Inicia sesión'}
       </button>
+    </div>
+  )
+}
+
+function Stats() {
+  const [goleadores, setGoleadores] = useState([])
+
+  const cargarStats = async () => {
+    const { data } = await supabase
+      .from('goles')
+      .select('jugador, usuario_id')
+
+    const conteo = {}
+
+    data.forEach(g => {
+      if (!conteo[g.usuario_id]) {
+        conteo[g.usuario_id] = {
+          nombre: g.jugador,
+          goles: 0
+        }
+      }
+
+      conteo[g.usuario_id].goles++
+    })
+
+    const ranking = Object.values(conteo)
+      .sort((a, b) => b.goles - a.goles)
+
+    setGoleadores(ranking)
+  }
+
+  useEffect(() => {
+    cargarStats()
+  }, [])
+
+  return (
+    <div>
+      <h2>⚽ Goleadores</h2>
+
+      {goleadores.map((g, i) => (
+        <div key={i} style={{
+          background: '#0006',
+          padding: 10,
+          margin: '5px 0',
+          borderRadius: 8
+        }}>
+          #{i + 1} {g.nombre} - {g.goles} goles
+        </div>
+      ))}
     </div>
   )
 }
