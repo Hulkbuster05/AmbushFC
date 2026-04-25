@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import fondo from './assets/fondoambush.png'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -95,11 +95,7 @@ export default function App() {
 
     <Routes>
 
-      <Route path="/" element={
-        <div>
-          <h2>Bienvenido</h2>
-        </div>
-      } />
+  <Route path="/" element={<Navigate to="/partidos" />} />
 
   <Route path="/partidos" element={
   <>
