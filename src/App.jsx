@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import fondo from './assets/fondoambush.png'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -170,6 +170,7 @@ export default function App() {
 
   </Pantalla>
 )
+}
 
 function MenuNavegacion() {
   const navigate = useNavigate()
@@ -181,8 +182,6 @@ function MenuNavegacion() {
       <button onClick={() => navigate('/stats')}>📊</button>
     </div>
   )
-}
-
 }
 
 function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
