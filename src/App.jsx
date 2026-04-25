@@ -7,7 +7,7 @@ export default function App() {
   const [partidos, setPartidos] = useState([])
   const [mostrarForm, setMostrarForm] = useState(false)
   const [partidoEnVivo, setPartidoEnVivo] = useState(null)
-
+  const [vista, setVista] = useState('partidos')
   const [cancha, setCancha] = useState('')
   const [jugadores, setJugadores] = useState('')
   const [fechaHora, setFechaHora] = useState('')
@@ -123,6 +123,13 @@ export default function App() {
           />
         ))}
       </div>
+
+      <div style={styles.floatingMenu}>
+        <button onClick={() => setVista('menu')}>🏠</button>
+        <button onClick={() => setVista('partidos')}>⚽</button>
+        <button onClick={() => setVista('stats')}>📊</button>
+      </div>
+
     </Pantalla>
   )
 }
