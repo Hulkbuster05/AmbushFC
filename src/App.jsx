@@ -500,9 +500,10 @@ function PartidoEnVivo({ partido, volver }) {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: 10,
+      gap: 6,
       background: g.equipo === 'A' ? '#007bff33' : '#ff4d4d33',
-      padding: '6px 10px',
+      padding: '4px 8px',
+      fontSize: 13,
       borderRadius: 10,
       maxWidth: '70%',
       flexDirection: g.equipo === 'A' ? 'row' : 'row-reverse'
@@ -524,6 +525,12 @@ function PartidoEnVivo({ partido, volver }) {
           border: 'none',
           color: 'white',
           borderRadius: 6,
+          width: 18,
+          height: 18,
+          fontSize: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           cursor: 'pointer'
         }}
         onClick={() => {
@@ -549,7 +556,6 @@ function PartidoEnVivo({ partido, volver }) {
               justifyContent="space-between"
               onClick={() => registrarGol('A', j.nombre)}
             >
-              <span>⚽</span>
               <span>{j.nombre}</span>
             </button>
           ))}
@@ -565,7 +571,6 @@ function PartidoEnVivo({ partido, volver }) {
               justifyContent="space-between"
               onClick={() => registrarGol('B', j.nombre)}
             >
-              <span>⚽</span>
               <span>{j.nombre}</span>
             </button>
           ))}
@@ -1004,8 +1009,9 @@ const styles = {
   color: 'white',
   border: 'none',
   padding: '5px',
-  borderRadius: 8,
+  borderRadius: 6,
   textAlign: 'left', // 🔥 clave
+  fontSize: 13,
   cursor: 'pointer'
 },
   redBtn: {
@@ -1013,8 +1019,9 @@ const styles = {
   color: 'white',
   border: 'none',
   padding: '5px',
-  borderRadius: 8,
+  borderRadius: 6,
   textAlign: 'left',
+  fontSize: 13,
   cursor: 'pointer'
 },
   deleteBtn: {
@@ -1052,7 +1059,7 @@ const styles = {
   teamBox: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 8,
+    gap: 4,
   },
   cardForm: {
     display: 'flex',
