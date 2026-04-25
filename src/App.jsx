@@ -252,21 +252,23 @@ useEffect(() => {
       <h3>{partido.cancha}</h3>
 
       <div style={styles.row}>
-        <button
-  style={styles.blueBtn}
-  onClick={async () => {
-    const user = (await supabase.auth.getUser()).data.user
+    <button
+      style={styles.blueBtn}
+      onClick={async () => {
+    const { data } = await supabase.auth.getUser()
+    const user = data.user
 
-    const { data } = await supabase
+    const { data: actual } = await supabase
       .from('partido_jugadores')
       .select('*')
       .eq('partido_id', partido.id)
       .eq('usuario_id', user.id)
       .maybeSingle()
 
-    if (data) {
+    if (actual?.equipo === 'A') {
       await salirEquipo(partido.id)
     } else {
+      await salirEquipo(partido.id)
       await unirse(partido.id, 'A')
     }
 
@@ -275,26 +277,33 @@ useEffect(() => {
 >
   BLUE ({conteo.A})
 </button>
-        <button style={styles.redBtn} onClick={async () => {
-          const user = (await supabase.auth.getUser()).data.user
 
-          const { data } = await supabase
-            .from('partido_jugadores')
-            .select('*')
-            .eq('partido_id', partido.id)
-            .eq('usuario_id', user.id)
-            .maybeSingle()
+    <button
+  style={styles.redBtn}
+  onClick={async () => {
+    const { data } = await supabase.auth.getUser()
+    const user = data.user
 
-          if (data) {
-            await salirEquipo(partido.id)
-          } else {
-            await unirse(partido.id, 'B')
-          }
+    const { data: actual } = await supabase
+      .from('partido_jugadores')
+      .select('*')
+      .eq('partido_id', partido.id)
+      .eq('usuario_id', user.id)
+      .maybeSingle()
 
-          cargarConteo()
-        }}>
-          RED ({conteo.B})
-        </button>
+    if (actual?.equipo === 'B') {
+      await salirEquipo(partido.id)
+    } else {
+      await salirEquipo(partido.id)
+      await unirse(partido.id, 'B')
+    }
+
+    cargarConteo()
+  }}
+>
+  RED ({conteo.B})
+</button>
+
       </div>
 
     <div style={{ marginTop: 10 }}>
