@@ -488,31 +488,53 @@ function PartidoEnVivo({ partido, volver }) {
 
       <h3 style={{ marginTop: 30 }}>Eventos del partido</h3>
       {console.log("GOLES:", goles)}
-      {goles.map((g, id) => (
+      {goles.map((g) => (
   <div
     key={g.id}
     style={{
-      background: '#0006',
-      padding: 8,
-      margin: '5px 0',
-      borderRadius: 8,
       display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
+      justifyContent: g.equipo === 'A' ? 'flex-start' : 'flex-end',
+      margin: '6px 0'
     }}
   >
-    <span>
-      ⚽ {g.jugador} ({g.equipo === 'A' ? 'BLUE' : 'RED'}) - {g.minuto}'
-    </span>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      background: g.equipo === 'A' ? '#007bff33' : '#ff4d4d33',
+      padding: '6px 10px',
+      borderRadius: 10,
+      maxWidth: '70%',
+      flexDirection: g.equipo === 'A' ? 'row' : 'row-reverse'
+    }}>
 
-    <button
-      style={{ background: 'red', border: 'none', color: 'white', borderRadius: 6 }}
-      onClick={() => {
-        console.log("ELIMINANDO GOL ID:", g.id)
-        eliminarGol(g.id)}
-      }>
-      ❌
-    </button>
+      {/* TEXTO */}
+      <span style={{
+        textAlign: g.equipo === 'A' ? 'left' : 'right'
+      }}>
+        {g.equipo === 'A'
+          ? `⚽ ${g.jugador} ${g.minuto}'`
+          : `${g.minuto}' ${g.jugador} ⚽`}
+      </span>
+
+      {/* BOTÓN ELIMINAR */}
+      <button
+        style={{
+          background: 'red',
+          border: 'none',
+          color: 'white',
+          borderRadius: 6,
+          cursor: 'pointer'
+        }}
+        onClick={() => {
+          console.log("ELIMINANDO GOL ID:", g.id)
+          eliminarGol(g.id)
+        }}
+      >
+        ❌
+      </button>
+
+    </div>
   </div>
 ))}
 
