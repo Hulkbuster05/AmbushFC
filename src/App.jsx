@@ -227,7 +227,14 @@ function PartidoEnVivo({ partido, volver }) {
     await supabase.from('goles').insert({ partido_id: partido.id, equipo })
     cargarTodo()
   }
-
+  const golDirecto = async (equipo, jugador) => {
+  await supabase.from('goles').insert({
+    partido_id: partido.id,
+    equipo,
+    jugador,
+    minuto: Math.floor(Math.random() * 90)
+  })
+}
   const restarGol = async (equipo) => {
     const { data } = await supabase
       .from('goles')
@@ -273,17 +280,33 @@ function PartidoEnVivo({ partido, volver }) {
         </div>
       </div>
 
-      <div style={styles.playersWrapper}>
-        <div style={styles.teamBox}>
-          <h3>BLUE</h3>
-          {jugadoresA.map((j, i) => <p key={i}>• {j.nombre}</p>)}
-        </div>
+ <div style={styles.playersWrapper}>
+  <div style={styles.teamBox}>
+    <h3>BLUE</h3>
+    {jugadoresA.map((j, i) => (
+      <button
+        key={i}
+        style={styles.blueBtn}
+        onClick={() => golDirecto('A', j.nombre)}
+      >
+        ⚽ {j.nombre}
+      </button>
+    ))}
+  </div>
 
-        <div style={styles.teamBox}>
-          <h3>RED</h3>
-          {jugadoresB.map((j, i) => <p key={i}>• {j.nombre}</p>)}
-        </div>
-      </div>
+  <div style={styles.teamBox}>
+    <h3>RED</h3>
+    {jugadoresB.map((j, i) => (
+      <button
+        key={i}
+        style={styles.redBtn}
+        onClick={() => golDirecto('B', j.nombre)}
+      >
+        ⚽ {j.nombre}
+      </button>
+    ))}
+  </div>
+</div>
 
       <button style={styles.deleteBtn} onClick={volver}>Volver</button>
     </Pantalla>
