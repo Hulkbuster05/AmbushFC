@@ -88,10 +88,11 @@ export default function App() {
 
     <div style={styles.header}>
       <h1 style={styles.brandSmall}>Derbys Ambush FC</h1>
-     <button
+<button
   style={styles.logoutBtn}
   onClick={async () => {
     await supabase.auth.signOut()
+    setUser(null)
   }}
 >
   Salir
