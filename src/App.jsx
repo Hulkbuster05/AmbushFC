@@ -193,18 +193,23 @@ function MenuNavegacion() {
 
 function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
   const [conteo, setConteo] = useState({ A: 0, B: 0 })
+  const [jugadoresA, setJugadoresA] = useState([])
+  const [jugadoresB, setJugadoresB] = useState([])
 
   const cargarConteo = async () => {
-    const { data } = await supabase
-      .from('partido_jugadores')
-      .select('equipo')
-      .eq('partido_id', partido.id)
+  const { data } = await supabase
+    .from('partido_jugadores')
+    .select('equipo, nombre')
+    .eq('partido_id', partido.id)
 
-    setConteo({
-      A: data.filter(j => j.equipo === 'A').length,
-      B: data.filter(j => j.equipo === 'B').length
-    })
-  }
+  setConteo({
+    A: data.filter(j => j.equipo === 'A').length,
+    B: data.filter(j => j.equipo === 'B').length
+  })
+
+  setJugadoresA(data.filter(j => j.equipo === 'A'))
+  setJugadoresB(data.filter(j => j.equipo === 'B'))
+}
 
 useEffect(() => {
   const getUser = async () => {
@@ -243,7 +248,27 @@ useEffect(() => {
         </button>
       </div>
 
-      <button style={styles.secondaryBtn} onClick={ver}>Ver partido</button>
+    <div style={{ marginTop: 10 }}>
+
+  <strong>Jugadores:</strong>
+
+  <div>
+    <small>BLUE:</small>
+    {jugadoresA.map((j, i) => (
+      <span key={i}> {j.nombre},</span>
+    ))}
+  </div>
+
+  <div>
+    <small>RED:</small>
+    {jugadoresB.map((j, i) => (
+      <span key={i}> {j.nombre},</span>
+    ))}
+  </div>
+
+</div>
+
+      <button style={styles.secondaryBtn} onClick={ver}>Ver Partido</button>
 
       {esAdmin && (
         <button style={styles.deleteBtn} onClick={() => eliminarPartido(partido.id)}>
@@ -358,26 +383,14 @@ function PartidoEnVivo({ partido, volver }) {
   <div style={styles.teamBox}>
     <h3>BLUE</h3>
     {jugadoresA.map((j, i) => (
-      <button
-        key={i}
-        style={styles.blueBtn}
-        onClick={() => golDirecto('A', j.nombre)}
-      >
-        ⚽ {j.nombre}
-      </button>
+      <p key={i}>{j.nombre}</p>
     ))}
   </div>
 
   <div style={styles.teamBox}>
     <h3>RED</h3>
     {jugadoresB.map((j, i) => (
-      <button
-        key={i}
-        style={styles.redBtn}
-        onClick={() => golDirecto('B', j.nombre)}
-      >
-        ⚽ {j.nombre}
-      </button>
+      <p key={i}>{j.nombre}</p>
     ))}
   </div>
 </div>
