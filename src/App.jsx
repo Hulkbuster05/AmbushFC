@@ -981,7 +981,7 @@ const styles = {
   background: '#007bff',
   color: 'white',
   border: 'none',
-  padding: '10px',
+  padding: '5px',
   borderRadius: 8,
   textAlign: 'left', // 🔥 clave
   cursor: 'pointer'
@@ -990,7 +990,7 @@ const styles = {
   background: '#ff4d4d',
   color: 'white',
   border: 'none',
-  padding: '10px',
+  padding: '5px',
   borderRadius: 8,
   textAlign: 'left',
   cursor: 'pointer'
