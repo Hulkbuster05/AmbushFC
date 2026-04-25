@@ -534,10 +534,16 @@ function AuthEmail() {
 
   const handleAuth = async () => {
     if (modo === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+      const { data, error } = await supabase.auth.signInWithPassword({
+  email,
+  password
+})
+
+if (error) {
+  alert(error.message)
+} else {
+  window.location.reload()
+}
 
       if (error) alert(error.message)
     } else {
