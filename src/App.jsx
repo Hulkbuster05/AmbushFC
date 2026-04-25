@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import fondo from './assets/fondoambush.png'
+import { Routes, Route } from 'react-router-dom'
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -83,55 +84,105 @@ export default function App() {
   }
 
   return (
-    <Pantalla>
+  <Pantalla>
 
-      <div style={styles.header}>
-        <h1 style={styles.brandSmall}>Derbys Ambush FC</h1>
-        <button style={styles.logoutBtn} onClick={() => supabase.auth.signOut()}>
-          Salir
-        </button>
-      </div>
+    <div style={styles.header}>
+      <h1 style={styles.brandSmall}>Derbys Ambush FC</h1>
+      <button style={styles.logoutBtn} onClick={() => supabase.auth.signOut()}>
+        Salir
+      </button>
+    </div>
 
-      {esAdmin && (
-        <>
-          {!mostrarForm && (
-            <button style={styles.primaryBtn} onClick={() => setMostrarForm(true)}>
-              + Crear partido
+    <Routes>
+
+      <Route path="/" element={
+        <div>
+          <h2>Bienvenido</h2>
+        </div>
+      } />
+
+  <Route path="/partidos" element={
+  <>
+
+    {esAdmin && (
+      <>
+        {!mostrarForm && (
+          <button
+            style={styles.primaryBtn}
+            onClick={() => setMostrarForm(true)}
+          >
+            + Crear partido
+          </button>
+        )}
+
+        {mostrarForm && (
+          <div style={styles.cardForm}>
+            <input
+              placeholder="Cancha"
+              style={styles.input}
+              onChange={(e) => setCancha(e.target.value)}
+            />
+            <input
+              type="datetime-local"
+              style={styles.input}
+              onChange={(e) => setFechaHora(e.target.value)}
+            />
+            <input
+              placeholder="# jugadores"
+              style={styles.input}
+              onChange={(e) => setJugadores(e.target.value)}
+            />
+            <button style={styles.primaryBtn} onClick={crearPartido}>
+              Guardar
             </button>
-          )}
+          </div>
+        )}
+      </>
+    )}
 
-          {mostrarForm && (
-            <div style={styles.cardForm}>
-              <input placeholder="Cancha" style={styles.input} onChange={(e) => setCancha(e.target.value)} />
-              <input type="datetime-local" style={styles.input} onChange={(e) => setFechaHora(e.target.value)} />
-              <input placeholder="# jugadores" style={styles.input} onChange={(e) => setJugadores(e.target.value)} />
-              <button style={styles.primaryBtn} onClick={crearPartido}>Guardar</button>
-            </div>
-          )}
-        </>
-      )}
+    <div style={styles.grid}>
+      {partidos.map((p) => (
+        <PartidoCard
+          key={p.id}
+          partido={p}
+          unirse={unirse}
+          eliminarPartido={eliminarPartido}
+          esAdmin={esAdmin}
+          ver={() => setPartidoEnVivo(p)}
+        />
+      ))}
+    </div>
 
-      <div style={styles.grid}>
-        {partidos.map((p) => (
-          <PartidoCard
-            key={p.id}
-            partido={p}
-            unirse={unirse}
-            eliminarPartido={eliminarPartido}
-            esAdmin={esAdmin}
-            ver={() => setPartidoEnVivo(p)}
-          />
-        ))}
-      </div>
+  </>
+} />
 
-      <div style={styles.floatingMenu}>
-        <button onClick={() => setVista('menu')}>🏠</button>
-        <button onClick={() => setVista('partidos')}>⚽</button>
-        <button onClick={() => setVista('stats')}>📊</button>
-      </div>
+      <Route path="/stats" element={
+        <div>
+          <h2>Estadísticas</h2>
+          <p>Próximamente 🔥</p>
+        </div>
+      } />
 
-    </Pantalla>
+    </Routes>
+
+    {/* MENÚ */}
+    <MenuNavegacion />
+
+  </Pantalla>
+)
+
+function MenuNavegacion() {
+  const navigate = useNavigate()
+
+  return (
+    <div style={styles.floatingMenu}>
+      <button onClick={() => navigate('/')}>🏠</button>
+      <button onClick={() => navigate('/partidos')}>⚽</button>
+      <button onClick={() => navigate('/stats')}>📊</button>
+    </div>
   )
+}
+
 }
 
 function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
