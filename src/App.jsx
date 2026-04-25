@@ -840,13 +840,17 @@ const styles = {
   bg: {
     backgroundImage: `url(${fondo})`,
     backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundrepeat: 'no-repeat',
     minHeight: '100vh',
+    width: '100%',
     fontFamily: 'Oswald, sans-serif'
   },
   overlay: {
     backdropFilter: 'blur(6px)',
     background: 'rgba(0,0,0,0.55)',
     minHeight: '100vh',
+    width: '100%',
     padding: 30,
     color: 'white'
   },
