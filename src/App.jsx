@@ -15,12 +15,25 @@ export default function App() {
 
   const esAdmin = user?.email === 'alejandro012698@gmail.com'
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user)
-      cargarPartidos()
-    })
-  }, [])
+useEffect(() => {
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser()
+    setUser(data.user)
+    cargarPartidos()
+  }
+
+  getUser()
+
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setUser(session?.user || null)
+    }
+  )
+
+  return () => {
+    listener.subscription.unsubscribe()
+  }
+}, [])
 
   const cargarPartidos = async () => {
     const { data } = await supabase
