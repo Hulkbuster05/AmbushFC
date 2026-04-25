@@ -646,6 +646,8 @@ function Stats() {
   const [tablaGlobal, setTablaGlobal] = useState([])
   const [tablaAmericano, setTablaAmericano] = useState([])
   const [tablaColon, setTablaColon] = useState([])
+  const [goleadores, setGoleadores] = useState([])
+  const [mvp, setMvp] = useState(null)
 
   const calcularTabla = (partidos, goles) => {
     const equipos = {
@@ -687,19 +689,39 @@ function Stats() {
     const { data: partidos } = await supabase.from('partidos').select('*')
     const { data: goles } = await supabase.from('goles').select('*')
 
-    if (!partidos || !goles) return
+  if (!partidos || !goles) return
 
-    // 🌍 GLOBAL
-    setTablaGlobal(calcularTabla(partidos, goles))
+  // 🏆 TABLAS EQUIPOS
+  setTablaGlobal(calcularTabla(partidos, goles))
 
-    // 🏟️ AMERICANO
     const partidosAmericano = partidos.filter(p => p.cancha === 'Americano')
-    setTablaAmericano(calcularTabla(partidosAmericano, goles))
+  setTablaAmericano(calcularTabla(partidosAmericano, goles))
 
-    // 🏟️ COLON
     const partidosColon = partidos.filter(p => p.cancha === 'Colon')
     setTablaColon(calcularTabla(partidosColon, goles))
-  }
+
+  // ⚽ STATS JUGADORES
+    const conteo = {}
+
+    goles.forEach(g => {
+      if (!conteo[g.usuario_id]) {
+        conteo[g.usuario_id] = {
+          nombre: g.jugador,
+          goles: 0
+      }
+    }
+
+      conteo[g.usuario_id].goles++
+  })
+
+  const ranking = Object.values(conteo)
+    .sort((a, b) => b.goles - a.goles)
+
+  setGoleadores(ranking)
+
+  // 🥇 MVP GLOBAL
+  setMvp(ranking[0] || null)
+}
 
   useEffect(() => {
     cargarStats()
@@ -729,6 +751,26 @@ function Stats() {
       {renderTabla('🌍 Global', tablaGlobal)}
       {renderTabla('🏟️ Americano', tablaAmericano)}
       {renderTabla('🏟️ Colón', tablaColon)}
+
+      <h2>⚽ Goleadores</h2>
+
+      {goleadores.map((g, i) => (
+        <div key={i} style={{
+        background: '#0006',
+        padding: 10,
+        margin: '5px 0',
+    borderRadius: 8
+  }}>
+    #{i + 1} {g.nombre} - {g.goles} goles
+  </div>
+))}
+
+      {mvp && (
+  <h2 style={{ marginTop: 20 }}>
+    🏆 MVP Global: {mvp.nombre} ({mvp.goles} goles)
+  </h2>
+)}
+
     </div>
   )
 }
