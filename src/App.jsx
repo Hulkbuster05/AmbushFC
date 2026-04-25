@@ -530,36 +530,58 @@ function Pantalla({ children }) {
 function AuthEmail() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [modo, setModo] = useState('login') // login | register
+  const [modo, setModo] = useState('login')
+  const [nombre, setNombre] = useState('')
 
-  const handleAuth = async () => {
-    if (modo === 'login') {
-      const { data, error } = await supabase.auth.signInWithPassword({
-  email,
-  password
-})
+const handleAuth = async () => {
 
-if (error) {
-  alert(error.message)
-} else {
-  window.location.reload()
-}
+  if (modo === 'login') {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
 
-      if (error) alert(error.message)
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password
-      })
+    if (error) {
+      alert(error.message)
+      return
+    }
 
-      if (error) {
-        alert(error.message)
-      } else {
-        alert("Cuenta creada, ahora inicia sesión")
-        setModo('login')
+    const nombre = data.user?.user_metadata?.nombre
+
+    if (!nombre) {
+      alert("Debes crear tu cuenta con nombre primero")
+      await supabase.auth.signOut()
+      return
+    }
+
+    window.location.reload()
+  }
+
+  else {
+
+    if (!nombre) {
+      alert("Debes ingresar tu nombre")
+      return
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nombre: nombre
+        }
       }
+    })
+
+    if (error) {
+      alert(error.message)
+    } else {
+      alert("Cuenta creada, ahora inicia sesión")
+      setModo('login')
     }
   }
+}
 
   return (
     <div style={{
@@ -569,6 +591,16 @@ if (error) {
       maxWidth: 300,
       margin: 'auto'
     }}>
+
+        {modo === 'register' && (
+      <input
+        placeholder="Nombre completo"
+        value={nombre}
+        onChange={(e) => setNombre(e.target.value)}
+        style={styles.input}
+      />
+    )}
+
       <input
         placeholder="Correo"
         value={email}
