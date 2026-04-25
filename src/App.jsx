@@ -200,19 +200,25 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
     })
   }
 
-  useEffect(() => {
-    cargarConteo()
-    const canal = supabase
-      .channel('jugadores-' + partido.id)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'partido_jugadores', filter: `partido_id=eq.${partido.id}` },
-        () => cargarConteo()
-      )
-      .subscribe()
+useEffect(() => {
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser()
+    setUser(data.user)
+    cargarPartidos()
+  }
 
-    return () => supabase.removeChannel(canal)
-  }, [partido.id])
+  getUser()
+
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setUser(session?.user || null)
+    }
+  )
+
+  return () => {
+    listener.subscription.unsubscribe()
+  }
+}, [])
 
   return (
     <div style={styles.card}>
