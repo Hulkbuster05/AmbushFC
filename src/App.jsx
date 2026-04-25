@@ -196,7 +196,7 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
 
-  const cargarConteo = async () => {
+  const cargarConteo = async () => {  
   const { data } = await supabase
     .from('partido_jugadores')
     .select('equipo, nombre')
@@ -212,28 +212,28 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver }) {
 }
 
 useEffect(() => {
-  const getUser = async () => {
-    const { data } = await supabase.auth.getUser()
-    setUser(data.user)
-    cargarPartidos()
-  }
+  cargarConteo()
 
-  getUser()
-
-  const { data: listener } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      setUser(session?.user || null)
-
-      if (!session) {
-        setPartidoEnVivo(null)
+  const canal = supabase
+    .channel('jugadores-' + partido.id)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'partido_jugadores',
+        filter: `partido_id=eq.${partido.id}`
+      },
+      () => {
+        cargarConteo()
       }
-    }
-  )
+    )
+    .subscribe()
 
   return () => {
-    listener.subscription.unsubscribe()
+    supabase.removeChannel(canal)
   }
-}, [])
+}, [partido.id])
 
   return (
     <div style={styles.card}>
