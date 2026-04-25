@@ -375,7 +375,16 @@ function PartidoEnVivo({ partido, volver }) {
 
   if (!confirmar) return
 
-  await supabase.from('goles').delete().eq('id', id)
+  const { error } = await supabase
+    .from('goles')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.log("ERROR AL ELIMINAR:", error)
+    alert("No se pudo eliminar el gol")
+    return
+  }
 
   cargarTodo()
 }
@@ -420,7 +429,7 @@ function PartidoEnVivo({ partido, volver }) {
 
       <h3 style={{ marginTop: 30 }}>Eventos del partido</h3>
       {console.log("GOLES:", goles)}
-      {goles.map((g, i) => (
+      {goles.map((g, id) => (
   <div
     key={g.id}
     style={{
@@ -439,8 +448,10 @@ function PartidoEnVivo({ partido, volver }) {
 
     <button
       style={{ background: 'red', border: 'none', color: 'white', borderRadius: 6 }}
-      onClick={() => eliminarGol(g.id)}
-    >
+      onClick={() => {
+        console.log("ELIMINANDO GOL ID:", g.id)
+        eliminarGol(g.id)}
+      }>
       ❌
     </button>
   </div>
