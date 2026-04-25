@@ -95,8 +95,13 @@ export default function App() {
 
     <Routes>
 
-  <Route path="/" element={<Navigate to="/partidos" />} />
-
+  <Route path="/" element={<Navigate to="/inicio" />} />
+  <Route path="/inicio" element={
+    <div>
+      <h2>Bienvenido a Derbys Ambush FC</h2>
+      <p>Usa el menú para navegar ⚽</p>
+    </div>
+    } />
   <Route path="/partidos" element={
   <>
 
@@ -173,7 +178,7 @@ function MenuNavegacion() {
 
   return (
     <div style={styles.floatingMenu}>
-      <button onClick={() => navigate('/')}>🏠</button>
+      <button onClick={() => navigate('/inicio')}>🏠</button>
       <button onClick={() => navigate('/partidos')}>⚽</button>
       <button onClick={() => navigate('/stats')}>📊</button>
     </div>
