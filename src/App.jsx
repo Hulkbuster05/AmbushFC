@@ -284,24 +284,43 @@ function PartidoEnVivo({ partido, volver }) {
   const [golesB, setGolesB] = useState(0)
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
+  const [goles, setGoles] = useState([])
 
-  const cargarTodo = async () => {
-    const { data: goles } = await supabase
-      .from('goles')
-      .select('*')
-      .eq('partido_id', partido.id)
+ const cargarTodo = async () => {
+  const { data: golesData } = await supabase
+    .from('goles')
+    .select('*')
+    .eq('partido_id', partido.id)
+    .order('minuto', { ascending: true })
 
-    setGolesA(goles.filter(g => g.equipo === 'A').length)
-    setGolesB(goles.filter(g => g.equipo === 'B').length)
+  setGoles(golesData || [])
 
-    const { data: jugadores } = await supabase
-      .from('partido_jugadores')
-      .select('nombre, equipo')
-      .eq('partido_id', partido.id)
+  setGolesA(golesData.filter(g => g.equipo === 'A').length)
+  setGolesB(golesData.filter(g => g.equipo === 'B').length)
 
-    setJugadoresA(jugadores.filter(j => j.equipo === 'A'))
-    setJugadoresB(jugadores.filter(j => j.equipo === 'B'))
-  }
+  const { data: jugadores } = await supabase
+    .from('partido_jugadores')
+    .select('nombre, equipo')
+    .eq('partido_id', partido.id)
+
+  setJugadoresA(jugadores.filter(j => j.equipo === 'A'))
+  setJugadoresB(jugadores.filter(j => j.equipo === 'B'))
+
+  const registrarGol = async (equipo, jugador) => {
+  const minuto = prompt("Minuto del gol (ej: 23)")
+
+  if (!minuto) return
+
+  await supabase.from('goles').insert({
+    partido_id: partido.id,
+    equipo,
+    jugador,
+    minuto: Number(minuto)
+  })
+
+  cargarTodo()
+}
+}
 
   useEffect(() => {
     cargarTodo()
@@ -322,34 +341,7 @@ function PartidoEnVivo({ partido, volver }) {
     return () => supabase.removeChannel(canal)
   }, [partido.id])
 
-  const sumarGol = async (equipo) => {
-    await supabase.from('goles').insert({ partido_id: partido.id, equipo })
-    cargarTodo()
-  }
-  const golDirecto = async (equipo, jugador) => {
-  await supabase.from('goles').insert({
-    partido_id: partido.id,
-    equipo,
-    jugador,
-    minuto: Math.floor(Math.random() * 90)
-  })
-}
-  const restarGol = async (equipo) => {
-    const { data } = await supabase
-      .from('goles')
-      .select('id')
-      .eq('partido_id', partido.id)
-      .eq('equipo', equipo)
-      .order('id', { ascending: false })
-      .limit(1)
-
-    if (data.length > 0) {
-      await supabase.from('goles').delete().eq('id', data[0].id)
-      cargarTodo()
-    }
-  }
-
-  return (
+     return (
     <Pantalla>
       <h1 style={styles.brandSmall}>Partido en Vivo</h1>
 
@@ -367,30 +359,48 @@ function PartidoEnVivo({ partido, volver }) {
         </div>
       </div>
 
-      <div style={styles.controls}>
-        <div>
-          <button style={styles.blueBtn} onClick={() => sumarGol('A')}>+</button>
-          <button style={styles.secondaryBtn} onClick={() => restarGol('A')}>−</button>
-        </div>
+<h3 style={{ marginTop: 30 }}>Eventos del partido</h3>
 
-        <div>
-          <button style={styles.redBtn} onClick={() => sumarGol('B')}>+</button>
-          <button style={styles.secondaryBtn} onClick={() => restarGol('B')}>−</button>
-        </div>
-      </div>
+{goles.map((g, i) => (
+  <div
+    key={i}
+    style={{
+      background: '#0006',
+      padding: 8,
+      margin: '5px 0',
+      borderRadius: 8
+    }}
+  >
+    ⚽ {g.jugador} ({g.equipo === 'A' ? 'BLUE' : 'RED'}) - {g.minuto}'
+  </div>
+))}
 
  <div style={styles.playersWrapper}>
   <div style={styles.teamBox}>
     <h3>BLUE</h3>
     {jugadoresA.map((j, i) => (
-      <p key={i}>{j.nombre}</p>
+     <button
+  key={i}
+  style={styles.blueBtn}
+  onClick={() => registrarGol('A', j.nombre)}
+>
+  ⚽ {j.nombre}
+</button>
+
     ))}
   </div>
 
   <div style={styles.teamBox}>
     <h3>RED</h3>
     {jugadoresB.map((j, i) => (
-      <p key={i}>{j.nombre}</p>
+     <button
+  key={i}
+  style={styles.redBtn}
+  onClick={() => registrarGol('B', j.nombre)}
+>
+  ⚽ {j.nombre}
+</button>
+
     ))}
   </div>
 </div>
