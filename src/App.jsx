@@ -58,6 +58,16 @@ export default function App() {
     })
   }
 
+  const salirEquipo = async (partidoId) => {
+  const user = (await supabase.auth.getUser()).data.user
+
+  await supabase
+    .from('partido_jugadores')
+    .delete()
+    .eq('partido_id', partidoId)
+    .eq('usuario_id', user.id)
+}
+
   if (!user) {
     return (
       <Pantalla>
@@ -240,10 +250,47 @@ useEffect(() => {
       <h3>{partido.cancha}</h3>
 
       <div style={styles.row}>
-        <button style={styles.blueBtn} onClick={() => unirse(partido.id, 'A')}>
-          BLUE ({conteo.A})
-        </button>
-        <button style={styles.redBtn} onClick={() => unirse(partido.id, 'B')}>
+        <button
+  style={styles.blueBtn}
+  onClick={async () => {
+    const user = (await supabase.auth.getUser()).data.user
+
+    const { data } = await supabase
+      .from('partido_jugadores')
+      .select('*')
+      .eq('partido_id', partido.id)
+      .eq('usuario_id', user.id)
+      .maybeSingle()
+
+    if (data) {
+      await salirEquipo(partido.id)
+    } else {
+      await unirse(partido.id, 'A')
+    }
+
+    cargarConteo()
+  }}
+>
+  BLUE ({conteo.A})
+</button>
+        <button style={styles.redBtn} onClick={async () => {
+          const user = (await supabase.auth.getUser()).data.user
+
+          const { data } = await supabase
+            .from('partido_jugadores')
+            .select('*')
+            .eq('partido_id', partido.id)
+            .eq('usuario_id', user.id)
+            .maybeSingle()
+
+          if (data) {
+            await salirEquipo(partido.id)
+          } else {
+            await unirse(partido.id, 'B')
+          }
+
+          cargarConteo()
+        }}>
           RED ({conteo.B})
         </button>
       </div>
@@ -306,8 +353,7 @@ function PartidoEnVivo({ partido, volver }) {
     setJugadoresB(jugadores.filter(j => j.equipo === 'B'))
   }
 
-  // 🔥 ESTA VA FUERA (IMPORTANTE)
-  const registrarGol = async (equipo, jugador) => {
+   const registrarGol = async (equipo, jugador) => {
     const minuto = prompt("Minuto del gol (ej: 23)")
 
     if (!minuto) return
@@ -321,6 +367,16 @@ function PartidoEnVivo({ partido, volver }) {
 
     cargarTodo()
   }
+
+  const eliminarGol = async (id) => {
+  const confirmar = confirm("¿Eliminar este gol?")
+
+  if (!confirmar) return
+
+  await supabase.from('goles').delete().eq('id', id)
+
+  cargarTodo()
+}
 
   useEffect(() => {
     cargarTodo()
@@ -363,18 +419,30 @@ function PartidoEnVivo({ partido, volver }) {
       <h3 style={{ marginTop: 30 }}>Eventos del partido</h3>
 
       {goles.map((g, i) => (
-        <div
-          key={i}
-          style={{
-            background: '#0006',
-            padding: 8,
-            margin: '5px 0',
-            borderRadius: 8
-          }}
-        >
-          ⚽ {g.jugador} ({g.equipo === 'A' ? 'BLUE' : 'RED'}) - {g.minuto}'
-        </div>
-      ))}
+  <div
+    key={i}
+    style={{
+      background: '#0006',
+      padding: 8,
+      margin: '5px 0',
+      borderRadius: 8,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }}
+  >
+    <span>
+      ⚽ {g.jugador} ({g.equipo === 'A' ? 'BLUE' : 'RED'}) - {g.minuto}'
+    </span>
+
+    <button
+      style={{ background: 'red', border: 'none', color: 'white', borderRadius: 6 }}
+      onClick={() => eliminarGol(g.id)}
+    >
+      ❌
+    </button>
+  </div>
+))}
 
       <div style={styles.playersWrapper}>
         <div style={styles.teamBox}>
