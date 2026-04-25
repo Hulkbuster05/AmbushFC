@@ -743,12 +743,12 @@ setMvp(ranking[0] || null)
   }, [])
 
  const renderTabla = (titulo, tabla) => (
-  <div style={{ marginBottom: 30 }}>
+  <div style={{ marginBottom: 15 }}>
     <h3>{titulo}</h3>
 
     <div style={{
       display: 'flex',
-      gap: 15,
+      gap: 10,
       flexWrap: 'wrap'
     }}>
       {tabla.map((t, i) => (
@@ -756,7 +756,7 @@ setMvp(ranking[0] || null)
           background: '#0006',
           padding: 15,
           borderRadius: 12,
-          minWidth: 150,
+          minWidth: 120,
           textAlign: 'center',
           flex: '1'
         }}>
@@ -794,9 +794,34 @@ return (
     <section>
       <h3>🏆 Equipos</h3>
 
-      {renderTabla('🌍 Global', tablaGlobal)}
-      {renderTabla('🏟️ Americano', tablaAmericano)}
-      {renderTabla('🏟️ Colón', tablaColon)}
+     <div style={{
+  display: 'flex',
+  gap: 20,
+  alignItems: 'flex-start',
+  flexWrap: 'wrap'
+}}>
+
+  {/* 🌍 IZQUIERDA */}
+  <div style={{
+    flex: 1,
+    minWidth: 250
+  }}>
+    {renderTabla('🌍 Global', tablaGlobal)}
+  </div>
+
+  {/* 🏟️ DERECHA */}
+  <div style={{
+    flex: 1,
+    minWidth: 250,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 20
+  }}>
+    {renderTabla('🏟️ Americano', tablaAmericano)}
+    {renderTabla('🏟️ Colón', tablaColon)}
+  </div>
+
+</div>
     </section>
 
     {/* ⚽ JUGADORES */}
