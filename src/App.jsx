@@ -234,6 +234,8 @@ function MenuNavegacion() {
 function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEquipo
  }) {
   const [conteo, setConteo] = useState({ A: 0, B: 0 })
+  const [golesA, setGolesA] = useState(0)
+  const [golesB, setGolesB] = useState(0)
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
 
@@ -251,6 +253,17 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEqui
   setJugadoresA(data.filter(j => j.equipo === 'A'))
   setJugadoresB(data.filter(j => j.equipo === 'B'))
 }
+
+// 🔥 traer goles
+const { data: goles } = await supabase
+  .from('goles')
+  .select('equipo')
+  .eq('partido_id', partido.id)
+
+const listaGoles = goles || []
+
+setGolesA(listaGoles.filter(g => g.equipo === 'A').length)
+setGolesB(listaGoles.filter(g => g.equipo === 'B').length)
 
 useEffect(() => {
   cargarConteo()
@@ -316,7 +329,7 @@ useEffect(() => {
     cargarConteo()
   }}
 >
-  BLUE ({conteo.A})
+  BLUE ({conteo.A}/{partido.jugadores})
 </button>
 
     <button
@@ -351,9 +364,27 @@ useEffect(() => {
     cargarConteo()
   }}
 >
-  RED ({conteo.B})
+  RED ({conteo.B}/{partido.jugadores})
 </button>
+</div>
 
+{partido.estado === 'cerrado' && (
+  <div style={{
+    marginTop: 10,
+    textAlign: 'center',
+    fontWeight: 'bold'
+  }}>
+    ⚽ {golesA} - {golesB}
+
+    <div style={{ fontSize: 12, marginTop: 4 }}>
+      {golesA > golesB && '🔵 BLUE gana'}
+      {golesB > golesA && '🔴 RED gana'}
+      {golesA === golesB && '🤝 Empate'}
+    </div>
+  </div>
+)}
+
+      {/*
   <div>
    <div style={{ marginTop: 10 }}>
   <strong>Jugadores:</strong>
@@ -374,6 +405,7 @@ useEffect(() => {
     </div>
   </div>
 
+
   <div style={{ marginTop: 5 }}>
     <small>RED:</small>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -391,8 +423,7 @@ useEffect(() => {
   </div>
 </div>
   </div>
-
-</div>
+  */}
 
       <button style={styles.secondaryBtn} onClick={ver}>Ver Partido</button>
       
