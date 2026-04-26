@@ -113,9 +113,10 @@ if (!user) {
 
   if (partidoEnVivo) {
     return (
-      <PartidoEnVivo
+      <PartidoEnVivo 
         partido={partidoEnVivo}
         volver={() => setPartidoEnVivo(null)}
+        esAdmin={true}
       />
     )
   }
@@ -452,7 +453,7 @@ useEffect(() => {
   )
 }
 
-function PartidoEnVivo({ partido, volver }) {
+function PartidoEnVivo({ partido, volver ,esAdmin}) {
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
   const [goles, setGoles] = useState([])
@@ -494,7 +495,13 @@ function PartidoEnVivo({ partido, volver }) {
 }
 
   const eliminarGol = async (id) => {
-  const confirmar = confirm("¿Eliminar este gol?")
+
+    if (partido.estado === 'cerrado') {
+      alert("Partido cerrado, no se pueden eliminar goles")
+      return
+    }
+
+    const confirmar = confirm("¿Eliminar este gol?")
 
   if (!confirmar) return
 
@@ -506,6 +513,31 @@ function PartidoEnVivo({ partido, volver }) {
   if (error) {
     console.log("ERROR AL ELIMINAR:", error)
     alert("No se pudo eliminar el gol")
+    return
+  }
+
+  cargarTodo()
+}
+
+const eliminarJugador = async (usuario_id) => {
+
+  if (partido.estado === 'cerrado') {
+    alert("No puedes modificar jugadores en un partido cerrado")
+    return
+  }
+
+  const confirmar = confirm("¿Eliminar jugador del partido?")
+  if (!confirmar) return
+
+  const { error } = await supabase
+    .from('partido_jugadores')
+    .delete()
+    .eq('partido_id', partido.id)
+    .eq('usuario_id', usuario_id)
+
+  if (error) {
+    console.log("ERROR AL ELIMINAR JUGADOR:", error)
+    alert("No se pudo eliminar el jugador")
     return
   }
 
@@ -583,19 +615,20 @@ function PartidoEnVivo({ partido, volver }) {
       </span>
 
       {/* BOTÓN ELIMINAR */}
-      <button
-        style={{
-          background: 'red',
-          border: 'none',
-          color: 'white',
-          borderRadius: 6,
-          width: 18,
-          height: 18,
-          fontSize: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer'
+      {partido.estado === 'abierto' && (
+        <button
+          style={{
+            background: 'red',
+            border: 'none',
+            color: 'white',
+            borderRadius: 6,
+            width: 18,
+            height: 18,
+            fontSize: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer'
         }}
         onClick={() => {
           console.log("ELIMINANDO GOL ID:", g.id)
@@ -604,6 +637,7 @@ function PartidoEnVivo({ partido, volver }) {
       >
         ❌
       </button>
+      )}
 
     </div>
   </div>
@@ -613,43 +647,95 @@ function PartidoEnVivo({ partido, volver }) {
         <div style={styles.teamBox}>
           <h3>BLUE</h3>
           {jugadoresA.map((j, i) => (
-            <button
-              key={i}
-              style={styles.blueBtn}
-              display="flex"
-              justifyContent="space-between"
-              onClick={() => {
-  if (partido.estado === 'cerrado') {
-    alert("Partido cerrado")
-    return
-  }
-  registrarGol('A', j)
-}}
-            >
-              <span>{j.nombre}</span>
-            </button>
-          ))}
+  <div
+    key={i}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6
+    }}
+  >
+    {/* BOTÓN PARA GOL */}
+    <button
+      style={{ ...styles.blueBtn, flex: 1 }}
+      onClick={() => {
+        if (partido.estado === 'cerrado') {
+          alert("Partido cerrado")
+          return
+        }
+        registrarGol('A', j)
+      }}
+    >
+      {j.nombre}
+    </button>
+
+    {/* BOTÓN ADMIN ❌ */}
+    {esAdmin && partido.estado === 'abierto' && (
+      <button
+        style={{
+          background: 'red',
+          border: 'none',
+          color: 'white',
+          borderRadius: 6,
+          width: 20,
+          height: 20,
+          fontSize: 12,
+          cursor: 'pointer'
+        }}
+        onClick={() => eliminarJugador(j.usuario_id)}
+      >
+        ❌
+      </button>
+    )}
+  </div>
+))}
         </div>
 
         <div style={styles.teamBox}>
           <h3>RED</h3>
           {jugadoresB.map((j, i) => (
-            <button
-              key={i}
-              style={styles.redBtn}
-              display="flex"
-              justifyContent="space-between"
-              onClick={() => {
-  if (partido.estado === 'cerrado') {
-    alert("Partido cerrado")
-    return
-  }
-  registrarGol('B', j)
-}}
-            >
-              <span>{j.nombre}</span>
-            </button>
-          ))}
+  <div
+    key={i}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6
+    }}
+  >
+    {/* BOTÓN PARA GOL */}
+    <button
+      style={{ ...styles.redBtn, flex: 1 }}
+      onClick={() => {
+        if (partido.estado === 'cerrado') {
+          alert("Partido cerrado")
+          return
+        }
+        registrarGol('B', j)
+      }}
+    >
+      {j.nombre}
+    </button>
+
+    {/* BOTÓN ADMIN ❌ */}
+    {esAdmin && partido.estado === 'abierto' && (
+      <button
+        style={{
+          background: 'black',
+          border: 'none',
+          color: 'white',
+          borderRadius: 6,
+          width: 20,
+          height: 20,
+          fontSize: 12,
+          cursor: 'pointer'
+        }}
+        onClick={() => eliminarJugador(j.usuario_id)}
+      >
+        ❌
+      </button>
+    )}
+  </div>
+))}
         </div>
       </div>
 
