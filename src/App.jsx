@@ -814,9 +814,9 @@ setMvp(ranking[0] || null)
           background: '#0006',
           padding: 15,
           borderRadius: 12,
-          minWidth: 0,
+          minWidth: 120,
           textAlign: 'center',
-          flex: '1 1 120px'
+          flex: '1'
         }}>
           <h4 style={{ marginBottom: 10 }}>{t.nombre}</h4>
 
@@ -947,10 +947,9 @@ const styles = {
     backgroundImage: `url(${fondo})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundrepeat: 'no-repeat',
+    backgroundRepeat: 'no-repeat',
     minHeight: '100vh',
     width: '100%',
-    overflowX: 'hidden',
     fontFamily: 'Oswald, sans-serif'
   },
   overlay: {
@@ -960,12 +959,14 @@ const styles = {
     width: '100%',
     padding: 30,
     color: 'white',
-    overflowX: 'hidden'
+    boxSizing: 'border-box'
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
     marginBottom: 20
   },
   logoutBtn: {
@@ -1055,8 +1056,10 @@ const styles = {
   },
   playersWrapper: {
     display: 'flex',
-    justifyContent: 'space-around',
-    marginTop: 40
+    justifyContent: 'center',
+    gap: 40,
+    marginTop: 40,
+    flexWrap: 'wrap'
   },
   teamBox: {
     display: 'flex',
