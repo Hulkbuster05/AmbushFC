@@ -579,7 +579,7 @@ function PartidoEnVivo({ partido, volver ,esAdmin}) {
     partido_id: partido.id,
     equipo,
     jugador: jugadorObj.nombre,
-    usuario_id: jugadorObj.usuario_id, // 🔥 AHORA ES CORRECTO
+    usuario_id: jugadorObj.usuario_id || null,
     minuto: Number(minuto)
   })
 
@@ -739,6 +739,7 @@ const eliminarJugador = async (usuario_id) => {
         <div style={styles.teamBox}>
           <h3>BLUE</h3>
           {jugadoresA.map((j, i) => (
+            
   <div
     key={i}
     style={{
@@ -782,6 +783,26 @@ const eliminarJugador = async (usuario_id) => {
   </div>
 ))}
         </div>
+
+      {/* 🔥 BOTÓN DESCONOCIDO BLUE */}
+<div style={{ marginTop: 6 }}>
+  <button
+    style={{ ...styles.blueBtn, width: '100%', opacity: 0.7 }}
+    onClick={() => {
+      if (partido.estado === 'cerrado') {
+        alert("Partido cerrado")
+        return
+      }
+
+      registrarGol('A', {
+        nombre: 'Desconocido',
+        usuario_id: null
+      })
+    }}
+  >
+    ➕ Desconocido
+  </button>
+</div>
 
         <div style={styles.teamBox}>
           <h3>RED</h3>
