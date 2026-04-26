@@ -200,6 +200,7 @@ if (!user) {
 } />
 
       <Route path="/stats" element={<Stats />} />
+      <Route path="/perfil" element={<Perfil />} />
 
     </Routes>
 
@@ -218,6 +219,7 @@ function MenuNavegacion() {
       <button onClick={() => navigate('/inicio')}>🏠</button>
       <button onClick={() => navigate('/partidos')}>⚽</button>
       <button onClick={() => navigate('/stats')}>📊</button>
+      <button onClick={() => navigate('/perfil')}>👤</button>
     </div>
   )
 }
@@ -403,31 +405,27 @@ function PartidoEnVivo({ partido, volver }) {
 
     const { data: jugadores } = await supabase
       .from('partido_jugadores')
-      .select('nombre, equipo')
+      .select('nombre, equipo, usuario_id')
       .eq('partido_id', partido.id)
 
     setJugadoresA(jugadores.filter(j => j.equipo === 'A'))
     setJugadoresB(jugadores.filter(j => j.equipo === 'B'))
   }
 
-   const registrarGol = async (equipo, jugador) => {
-    const minuto = prompt("Minuto del gol (ej: 23)")
+  const registrarGol = async (equipo, jugadorObj) => {
+  const minuto = prompt("Minuto del gol (ej: 23)")
+  if (!minuto) return
 
-    if (!minuto) return
+  await supabase.from('goles').insert({
+    partido_id: partido.id,
+    equipo,
+    jugador: jugadorObj.nombre,
+    usuario_id: jugadorObj.usuario_id, // 🔥 AHORA ES CORRECTO
+    minuto: Number(minuto)
+  })
 
-    const { data } = await supabase.auth.getUser()
-    const user = data.user
-
-    await supabase.from('goles').insert({
-      partido_id: partido.id,
-      equipo,
-      jugador,
-      usuario_id: user.id,
-      minuto: Number(minuto)
-    })
-
-    cargarTodo()
-  }
+  cargarTodo()
+}
 
   const eliminarGol = async (id) => {
   const confirmar = confirm("¿Eliminar este gol?")
@@ -554,7 +552,7 @@ function PartidoEnVivo({ partido, volver }) {
               style={styles.blueBtn}
               display="flex"
               justifyContent="space-between"
-              onClick={() => registrarGol('A', j.nombre)}
+              onClick={() => registrarGol('A', j)}
             >
               <span>{j.nombre}</span>
             </button>
@@ -569,7 +567,7 @@ function PartidoEnVivo({ partido, volver }) {
               style={styles.redBtn}
               display="flex"
               justifyContent="space-between"
-              onClick={() => registrarGol('B', j.nombre)}
+              onClick={() => registrarGol('B', j)}
             >
               <span>{j.nombre}</span>
             </button>
@@ -937,6 +935,97 @@ function JugadorDetalle({ goleadores }) {
           <p>🏟️ Colón: {jugador.colon}</p>
         </div>
       )}
+
+    </div>
+  )
+}
+
+function Perfil() {
+  const [user, setUser] = useState(null)
+  const [stats, setStats] = useState(null)
+  const [equipo, setEquipo] = useState(null)
+
+  useEffect(() => {
+    cargarPerfil()
+  }, [])
+
+  const cargarPerfil = async () => {
+    const { data: userData } = await supabase.auth.getUser()
+    const u = userData.user
+    setUser(u)
+
+    // 🔥 traer goles del usuario
+    const { data: goles } = await supabase
+      .from('goles')
+      .select('*')
+      .eq('usuario_id', u.id)
+
+    const total = goles.length
+    const blue = goles.filter(g => g.equipo === 'A').length
+    const red = goles.filter(g => g.equipo === 'B').length
+
+    setStats({ total, blue, red })
+
+    // 🔥 traer preferencia
+    const { data } = await supabase
+      .from('perfil_usuario')
+      .select('*')
+      .eq('usuario_id', u.id)
+      .maybeSingle()
+
+    setEquipo(data?.equipo_preferido || null)
+  }
+
+  const guardarEquipo = async (eq) => {
+    const user = (await supabase.auth.getUser()).data.user
+
+    await supabase
+      .from('perfil_usuario')
+      .upsert({
+        usuario_id: user.id,
+        equipo_preferido: eq
+      })
+
+    setEquipo(eq)
+  }
+
+  if (!user || !stats) return <p>Cargando...</p>
+
+  return (
+    <div>
+
+      <h2>👤 Perfil</h2>
+
+      <p><strong>Nombre:</strong> {user.user_metadata?.nombre}</p>
+      <p><strong>Correo:</strong> {user.email}</p>
+
+      <h3 style={{ marginTop: 20 }}>⚽ Estadísticas</h3>
+
+      <p>Total goles: {stats.total}</p>
+      <p>🔵 BLUE: {stats.blue}</p>
+      <p>🔴 RED: {stats.red}</p>
+
+      <h3 style={{ marginTop: 20 }}>⭐ Equipo Preferido</h3>
+
+      <button
+        style={{
+          ...styles.blueBtn,
+          opacity: equipo === 'A' ? 1 : 0.5
+        }}
+        onClick={() => guardarEquipo('A')}
+      >
+        🔵 BLUE
+      </button>
+
+      <button
+        style={{
+          ...styles.redBtn,
+          opacity: equipo === 'B' ? 1 : 0.5
+        }}
+        onClick={() => guardarEquipo('B')}
+      >
+        🔴 RED
+      </button>
 
     </div>
   )
