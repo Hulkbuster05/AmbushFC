@@ -782,9 +782,8 @@ const eliminarJugador = async (usuario_id) => {
     )}
   </div>
 ))}
-        </div>
 
-      {/* 🔥 BOTÓN DESCONOCIDO BLUE */}
+{/* 🔥 BOTÓN DESCONOCIDO BLUE */}
 <div style={{ marginTop: 6 }}>
   <button
     style={{ ...styles.blueBtn, width: '100%', opacity: 0.7 }}
@@ -803,6 +802,8 @@ const eliminarJugador = async (usuario_id) => {
     ➕ Desconocido
   </button>
 </div>
+
+        </div>
 
         <div style={styles.teamBox}>
           <h3>RED</h3>
