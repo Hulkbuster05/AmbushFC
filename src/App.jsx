@@ -1057,7 +1057,10 @@ function Stats() {
 
 const conteo = {}
 
-goles.forEach(g => {
+// 🔥 FILTRAR SOLO GOLES CON USUARIO
+const golesValidos = goles.filter(g => g.usuario_id)
+
+golesValidos.forEach(g => {
   if (!conteo[g.usuario_id]) {
     conteo[g.usuario_id] = {
       nombre: g.jugador,
@@ -1069,7 +1072,6 @@ goles.forEach(g => {
 
   conteo[g.usuario_id].goles++
 
-  // 🔥 identificar cancha
   const partido = partidos.find(p => p.id === g.partido_id)
 
   if (partido?.cancha === 'Americano') {
