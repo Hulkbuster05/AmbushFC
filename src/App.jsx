@@ -883,7 +883,7 @@ return (
     {/* 📊 EQUIPOS DETALLADO */}
     {vista === 'equipos' && (
       <>
-        <h3>📊 Estadísticas por Cancha</h3>
+        <h3>📊 Estadísticas Por Cancha</h3>
 
         {renderTabla('🏟️ Americano', tablaAmericano)}
         {renderTabla('🏟️ Colón', tablaColon)}
