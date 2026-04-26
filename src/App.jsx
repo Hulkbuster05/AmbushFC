@@ -553,6 +553,9 @@ function PartidoEnVivo({ partido, volver ,esAdmin}) {
   const golesA = goles.filter(g => g.equipo === 'A').length
   const golesB = goles.filter(g => g.equipo === 'B').length
 
+  const golesAgrupadosA = agruparGoles(goles.filter(g => g.equipo === 'A'))
+  const golesAgrupadosB = agruparGoles(goles.filter(g => g.equipo === 'B'))
+
   const cargarTodo = async () => {
     const { data: golesData } = await supabase
       .from('goles')
@@ -636,6 +639,32 @@ const eliminarJugador = async (usuario_id) => {
   cargarTodo()
 }
 
+// 🔥 AGRUPAR GOLES POR JUGADOR + EQUIPO
+const agruparGoles = (lista) => {
+  const grupos = {}
+
+  lista.forEach(g => {
+    const key = `${g.jugador}_${g.equipo}`
+
+    if (!grupos[key]) {
+      grupos[key] = {
+        jugador: g.jugador,
+        equipo: g.equipo,
+        minutos: [],
+        goles: []
+      }
+    }
+
+    grupos[key].minutos.push(g.minuto)
+    grupos[key].goles.push(g)
+  })
+
+  return Object.values(grupos).map(grupo => ({
+    ...grupo,
+    minutos: grupo.minutos.sort((a, b) => a - b)
+  }))
+}
+
   useEffect(() => {
     cargarTodo()
 
@@ -676,64 +705,101 @@ const eliminarJugador = async (usuario_id) => {
 
       <h3 style={{ marginTop: 30 }}>Eventos del partido</h3>
       {console.log("GOLES:", goles)}
-      {goles.map((g) => (
-  <div
-    key={g.id}
-    style={{
-      display: 'flex',
-      justifyContent: g.equipo === 'A' ? 'flex-start' : 'flex-end',
-      margin: '6px 0'
-    }}
-  >
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      background: g.equipo === 'A' ? '#007bff33' : '#ff4d4d33',
-      padding: '4px 8px',
-      fontSize: 13,
-      borderRadius: 10,
-      maxWidth: '70%',
-      flexDirection: g.equipo === 'A' ? 'row' : 'row-reverse'
-    }}>
+      <div style={{
+  maxHeight: 180,
+  overflowY: 'auto',
+  marginTop: 10
+}}>
 
-      {/* TEXTO */}
-      <span style={{
-        textAlign: g.equipo === 'A' ? 'left' : 'right'
-      }}>
-        {g.equipo === 'A'
-          ? `⚽ ${g.jugador} ${g.minuto}'`
-          : `${g.minuto}' ${g.jugador} ⚽`}
-      </span>
-
-      {/* BOTÓN ELIMINAR */}
-      {partido.estado === 'abierto' && (
-        <button
-          style={{
-            background: 'red',
-            border: 'none',
-            color: 'white',
-            borderRadius: 6,
-            width: 18,
-            height: 18,
-            fontSize: 10,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer'
-        }}
-        onClick={() => {
-          console.log("ELIMINANDO GOL ID:", g.id)
-          eliminarGol(g.id)
+  {/* 🔵 BLUE */}
+  <div style={{ marginBottom: 10 }}>
+    {golesAgrupadosA.map((grupo, i) => (
+      <div
+        key={i}
+        style={{
+          background: '#007bff33',
+          padding: '6px 10px',
+          borderRadius: 10,
+          marginBottom: 5
         }}
       >
-        ❌
-      </button>
-      )}
+        <div>
+          ⚽ {grupo.jugador} {grupo.minutos.map(m => `${m}'`).join(' ')}
+        </div>
 
-    </div>
+        {/* 🔥 BOTONES ELIMINAR */}
+        {partido.estado === 'abierto' && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+            {grupo.goles.map(g => (
+              <button
+                key={g.id}
+                style={{
+                  background: 'red',
+                  border: 'none',
+                  color: 'white',
+                  borderRadius: 6,
+                  width: 18,
+                  height: 18,
+                  fontSize: 10,
+                  cursor: 'pointer'
+                }}
+                onClick={() => eliminarGol(g.id)}
+              >
+                ❌
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    ))}
   </div>
-))}
+
+
+  {/* 🔴 RED */}
+  <div>
+    {golesAgrupadosB.map((grupo, i) => (
+      <div
+        key={i}
+        style={{
+          background: '#ff4d4d33',
+          padding: '6px 10px',
+          borderRadius: 10,
+          marginBottom: 5,
+          textAlign: 'right'
+        }}
+      >
+        <div>
+          {grupo.minutos.map(m => `${m}'`).join(' ')} {grupo.jugador} ⚽
+        </div>
+
+        {/* 🔥 BOTONES ELIMINAR */}
+        {partido.estado === 'abierto' && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 4, justifyContent: 'flex-end' }}>
+            {grupo.goles.map(g => (
+              <button
+                key={g.id}
+                style={{
+                  background: 'red',
+                  border: 'none',
+                  color: 'white',
+                  borderRadius: 6,
+                  width: 18,
+                  height: 18,
+                  fontSize: 10,
+                  cursor: 'pointer'
+                }}
+                onClick={() => eliminarGol(g.id)}
+              >
+                ❌
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+
+</div>
 
       <div style={styles.playersWrapper}>
         <div style={styles.teamBox}>
