@@ -849,6 +849,27 @@ const eliminarJugador = async (usuario_id) => {
     )}
   </div>
 ))}
+
+      {/* 🔥 BOTÓN DESCONOCIDO RED */}
+<div style={{ marginTop: 6 }}>
+  <button
+    style={{ ...styles.redBtn, width: '100%', opacity: 0.7 }}
+    onClick={() => {
+      if (partido.estado === 'cerrado') {
+        alert("Partido cerrado")
+        return
+      }
+
+      registrarGol('B', {
+        nombre: 'Desconocido',
+        usuario_id: null
+      })
+    }}
+  >
+    ➕ Desconocido
+  </button>
+</div>
+
         </div>
       </div>
 
