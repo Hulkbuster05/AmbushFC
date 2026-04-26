@@ -325,10 +325,15 @@ useEffect(() => {
 
   return (
     <div style={styles.card}>
-      <h3>{partido.cancha} {partido.estado === 'cerrado' ? '🔒' : '🟢'}</h3>
-      <p style={{ margin: 0, fontSize: 14, opacity: 0.8 }}>
-  {new Date(partido.fecha_hora).toLocaleString()}
-</p>
+      <div style={{ marginBottom: 8 }}>
+  <div style={{ fontWeight: 'bold', fontSize: 16 }}>
+    {partido.cancha} {partido.estado === 'cerrado' ? '🔒' : '🟢'}
+  </div>
+
+  <div style={{ fontSize: 12, opacity: 0.7 }}>
+    {new Date(partido.fecha_hora).toLocaleString()}
+  </div>
+</div>
 
       <div style={styles.row}>
     <button
@@ -404,15 +409,20 @@ useEffect(() => {
 
 {partido.estado === 'cerrado' && (
   <div style={{
-    marginTop: 10,
+    marginTop: 8,
     textAlign: 'center',
+    fontSize: 14,
     fontWeight: 'bold'
   }}>
     ⚽ {golesA} - {golesB}
 
-    <div style={{ fontSize: 12, marginTop: 4 }}>
-      {golesA > golesB && '🔵 BLUE gana'}
-      {golesB > golesA && '🔴 RED gana'}
+    <div style={{ 
+      fontSize: 12, 
+      textAlign: 'center',
+      opacity: 0.8      
+      }}>
+      {golesA > golesB && '🔵 Ganó BLUE'}
+      {golesB > golesA && '🔴 Ganó RED'}
       {golesA === golesB && '🤝 Empate'}
     </div>
   </div>
@@ -458,7 +468,16 @@ useEffect(() => {
   </div>
   */}
 
-      <button style={styles.secondaryBtn} onClick={ver}>Ver Partido</button>
+      <button style={{
+        ...styles.secondaryBtn,
+        marginTop: 8,
+        padding: '6px',
+        fontSize: 12
+        }} 
+        onClick={ver}
+      >
+      Ver
+      </button>
       
       {esAdmin && (
   <button
@@ -1413,13 +1432,16 @@ const styles = {
   },
   card: {
     background: 'rgba(0,0,0,0.5)',
-    borderRadius: 20,
-    padding: 20,
-    width: 280
+    borderRadius: 16,
+    padding: 12,
+    flex: '1 1 240px',
+    maxWidth: 260,
+
   },
   row: {
     display: 'flex',
-    gap: 10
+    gap: 6,
+    marginTop: 6
   },
   primaryBtn: {
     background: '#00c853',
@@ -1439,20 +1461,22 @@ const styles = {
   background: '#007bff',
   color: 'white',
   border: 'none',
-  padding: '5px',
+  padding: '6px',
   borderRadius: 6,
-  textAlign: 'left', // 🔥 clave
-  fontSize: 13,
+  textAlign: 'center',
+  flex: 1,
+  fontSize: 12,
   cursor: 'pointer'
 },
   redBtn: {
   background: '#ff4d4d',
   color: 'white',
   border: 'none',
-  padding: '5px',
+  padding: '6px',
   borderRadius: 6,
-  textAlign: 'left',
-  fontSize: 13,
+  textAlign: 'center',
+  flex: 1,
+  fontSize: 12,
   cursor: 'pointer'
 },
   deleteBtn: {
