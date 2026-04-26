@@ -271,7 +271,7 @@ useEffect(() => {
 
   return (
     <div style={styles.card}>
-      <h3>{partido.cancha}</h3>
+      <h3>{partido.cancha}{partido.estado === 'cerrado' && ' 🔒 '}</h3>
       <p style={{ margin: 0, fontSize: 14, opacity: 0.8 }}>
   {new Date(partido.fecha_hora).toLocaleString()}
 </p>
@@ -329,12 +329,6 @@ useEffect(() => {
   RED ({conteo.B})
 </button>
 
-      </div>
-
-    <div style={{ marginTop: 10 }}>
-
-  <strong>Jugadores:</strong>
-
   <div>
    <div style={{ marginTop: 10 }}>
   <strong>Jugadores:</strong>
@@ -378,7 +372,11 @@ useEffect(() => {
       <button style={styles.secondaryBtn} onClick={ver}>Ver Partido</button>
 
       {esAdmin && (
-        <button style={styles.deleteBtn} onClick={() => eliminarPartido(partido.id)}>
+        <button style={styles.deleteBtn} onClick={() => {
+          const confirmar = window.confirm("¿Eliminar este partido?")
+          if (!confirmar) return
+          eliminarPartido(partido.id)
+        }}>
           Eliminar
         </button>
       )}
@@ -552,7 +550,13 @@ function PartidoEnVivo({ partido, volver }) {
               style={styles.blueBtn}
               display="flex"
               justifyContent="space-between"
-              onClick={() => registrarGol('A', j)}
+              onClick={() => {
+  if (partido.estado === 'cerrado') {
+    alert("Partido cerrado")
+    return
+  }
+  registrarGol('A', j)
+}}
             >
               <span>{j.nombre}</span>
             </button>
@@ -574,6 +578,20 @@ function PartidoEnVivo({ partido, volver }) {
           ))}
         </div>
       </div>
+
+<button
+  style={styles.secondaryBtn}
+  onClick={async () => {
+    await supabase
+      .from('partidos')
+      .update({ estado: 'cerrado' })
+      .eq('id', partido.id)
+
+    alert("Partido cerrado")
+  }}
+>
+  Cerrar Partido 🔒
+</button>
 
       <button style={styles.deleteBtn} onClick={volver}>
         Volver
