@@ -9,6 +9,7 @@ export default function App() {
   const [mostrarForm, setMostrarForm] = useState(false)
   const [partidoEnVivo, setPartidoEnVivo] = useState(null)
   const [vista, setVista] = useState('partidos')
+  const [filtroEstado, setFiltroEstado] = useState('abierto')
   const [cancha, setCancha] = useState('')
   const [jugadores, setJugadores] = useState('')
   const [fechaHora, setFechaHora] = useState('')
@@ -39,7 +40,7 @@ useEffect(() => {
   const { data, error } = await supabase
     .from('partidos')
     .select('*')
-    .order('fecha_hora')
+    .order('fecha_hora', { ascending: true })
 
   if (error) {
     console.log("ERROR:", error)
@@ -143,11 +144,36 @@ if (!user) {
   <Route path="/inicio" element={
     <div>
       <h2>Bienvenido a Derbys Ambush FC</h2>
-      <p>Usa el menú para navegar ⚽</p>
+      <p>⚽ Usa el menú para navegar ⚽</p>
     </div>
     } />
   <Route path="/partidos" element={
   <>
+   <div style={{
+  display: 'flex',
+  gap: 10,
+  marginBottom: 20
+}}>
+  <button
+    style={{
+      ...styles.secondaryBtn,
+      background: filtroEstado === 'abierto' ? '#00c853' : '#ffffff22'
+    }}
+    onClick={() => setFiltroEstado('abierto')}
+  >
+    🟢 Activos
+  </button>
+
+  <button
+    style={{
+      ...styles.secondaryBtn,
+      background: filtroEstado === 'cerrado' ? '#ff4d4d' : '#ffffff22'
+    }}
+    onClick={() => setFiltroEstado('cerrado')}
+  >
+    🔒 Finalizados
+  </button>
+</div>
 
     {esAdmin && (
       <>
@@ -190,7 +216,15 @@ if (!user) {
     )}
 
     <div style={styles.grid}>
-      {partidos.map((p) => (
+      {partidos
+        .filter(p => p.estado === filtroEstado)
+        .sort((a,b) => {
+          if (filtroEstado === 'cerrado') {
+            return new Date(b.fecha_hora) - new Date(a.fecha_hora)
+          }
+          return new Date(a.fecha_hora) - new Date(b.fecha_hora)
+        })
+        .map((p) => (
         <PartidoCard
           key={p.id}
           partido={p}
