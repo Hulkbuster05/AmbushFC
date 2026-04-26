@@ -42,6 +42,9 @@ useEffect(() => {
       .eq('estado', 'abierto')
       .order('fecha_hora')
 
+    console.log("PARTIDOS:", data)
+    console.log("ERROR:", error)
+      
     setPartidos(data || [])
   }
 
