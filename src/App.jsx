@@ -553,8 +553,35 @@ function PartidoEnVivo({ partido, volver ,esAdmin}) {
   const golesA = goles.filter(g => g.equipo === 'A').length
   const golesB = goles.filter(g => g.equipo === 'B').length
 
+  // 🔥 AGRUPAR GOLES POR JUGADOR + EQUIPO
+const agruparGoles = (lista) => {
+  const grupos = {}
+
+  lista.forEach(g => {
+    const key = `${g.jugador}_${g.equipo}`
+
+    if (!grupos[key]) {
+      grupos[key] = {
+        jugador: g.jugador,
+        equipo: g.equipo,
+        minutos: [],
+        goles: []
+      }
+    }
+
+    grupos[key].minutos.push(g.minuto)
+    grupos[key].goles.push(g)
+  })
+
+  return Object.values(grupos).map(grupo => ({
+    ...grupo,
+    minutos: grupo.minutos.sort((a, b) => a - b)
+  }))
+}
+
   const golesAgrupadosA = agruparGoles(goles.filter(g => g.equipo === 'A'))
   const golesAgrupadosB = agruparGoles(goles.filter(g => g.equipo === 'B'))
+
 
   const cargarTodo = async () => {
     const { data: golesData } = await supabase
@@ -637,32 +664,6 @@ const eliminarJugador = async (usuario_id) => {
   }
 
   cargarTodo()
-}
-
-// 🔥 AGRUPAR GOLES POR JUGADOR + EQUIPO
-const agruparGoles = (lista) => {
-  const grupos = {}
-
-  lista.forEach(g => {
-    const key = `${g.jugador}_${g.equipo}`
-
-    if (!grupos[key]) {
-      grupos[key] = {
-        jugador: g.jugador,
-        equipo: g.equipo,
-        minutos: [],
-        goles: []
-      }
-    }
-
-    grupos[key].minutos.push(g.minuto)
-    grupos[key].goles.push(g)
-  })
-
-  return Object.values(grupos).map(grupo => ({
-    ...grupo,
-    minutos: grupo.minutos.sort((a, b) => a - b)
-  }))
 }
 
   useEffect(() => {
@@ -753,7 +754,6 @@ const agruparGoles = (lista) => {
       </div>
     ))}
   </div>
-
 
   {/* 🔴 RED */}
   <div>
