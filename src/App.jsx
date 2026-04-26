@@ -953,31 +953,31 @@ const cargarPerfil = async () => {
   const { data: userData } = await supabase.auth.getUser()
   const u = userData?.user
 
-if (!u) {
-  console.log("No hay usuario")
-  return
-}
+  if (!u) {
+    console.log("No hay usuario")
+    return
+  }
 
-setUser(u)
-
-  console.log("USER:", u)
-  console.log("GOLES:", goles)
-  console.log("PARTIDOS:", partidos)
+  setUser(u)
 
   // 🔥 traer goles
   const { data: goles, error: errorGoles } = await supabase
-  .from('goles')
-  .select('*')
-  .eq('usuario_id', u.id)
+    .from('goles')
+    .select('*')
+    .eq('usuario_id', u.id)
 
-if (errorGoles) console.log(errorGoles)
+  if (errorGoles) console.log("Error goles:", errorGoles)
 
-  // 🔥 traer partidos (para saber cancha)
+  // 🔥 traer partidos
   const { data: partidos, error: errorPartidos } = await supabase
     .from('partidos')
     .select('id, cancha')
 
-if (errorPartidos) console.log(errorPartidos)
+  if (errorPartidos) console.log("Error partidos:", errorPartidos)
+
+  console.log("USER:", u)
+  console.log("GOLES:", goles)
+  console.log("PARTIDOS:", partidos)
 
   let total = 0
   let blue = 0
@@ -985,7 +985,7 @@ if (errorPartidos) console.log(errorPartidos)
   let americano = 0
   let colon = 0
 
-  (goles || []).forEach(g => {
+  ;(goles || []).forEach(g => {
     total++
 
     if (g.equipo === 'A') blue++
@@ -997,15 +997,13 @@ if (errorPartidos) console.log(errorPartidos)
     if (partido?.cancha === 'Colon') colon++
   })
 
-    setStats({
-      total: total || 0,
-      blue: blue || 0,
-      red: red || 0,
-      americano: americano || 0,
-      colon: colon || 0
-      })
-
-  setStats({ total, blue, red, americano, colon })
+  setStats({
+    total,
+    blue,
+    red,
+    americano,
+    colon
+  })
 
   // 🔥 equipo preferido
   const { data } = await supabase
