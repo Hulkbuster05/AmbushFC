@@ -947,7 +947,7 @@ const handleAuth = async () => {
       >
         {modo === 'login'
           ? '¿No tienes cuenta? Regístrate'
-          : '¿Ya tienes cuenta? Inicia sesión'}
+          : '¿Ya tienes cuenta? Inicia Sesión'}
       </button>
     </div>
   )
@@ -1445,11 +1445,10 @@ const styles = {
     padding: 12,
     flex: '1 1 240px',
     maxWidth: 260,
-
   },
   row: {
     display: 'flex',
-    gap: 6,
+    gap: 4,
     marginTop: 6
   },
   primaryBtn: {
