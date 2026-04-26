@@ -252,9 +252,8 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEqui
 
   setJugadoresA(data.filter(j => j.equipo === 'A'))
   setJugadoresB(data.filter(j => j.equipo === 'B'))
-}
 
-// 🔥 traer goles
+  // 🔥 traer goles
 const { data: goles } = await supabase
   .from('goles')
   .select('equipo')
@@ -264,6 +263,7 @@ const listaGoles = goles || []
 
 setGolesA(listaGoles.filter(g => g.equipo === 'A').length)
 setGolesB(listaGoles.filter(g => g.equipo === 'B').length)
+}
 
 useEffect(() => {
   cargarConteo()
