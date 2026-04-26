@@ -36,17 +36,20 @@ useEffect(() => {
 }, [])
 
   const cargarPartidos = async () => {
-    const { data } = await supabase
-      .from('partidos')
-      .select('*')
-      .eq('estado', 'abierto')
-      .order('fecha_hora')
+  const { data, error } = await supabase
+    .from('partidos')
+    .select('*')
+    .order('fecha_hora')
 
-    console.log("PARTIDOS:", data)
+  if (error) {
     console.log("ERROR:", error)
-      
-    setPartidos(data || [])
+    return
   }
+
+  console.log("PARTIDOS:", data)
+
+  setPartidos(data || [])
+}
 
   const crearPartido = async () => {
     const fechaUTC = new Date(fechaHora).toISOString()
