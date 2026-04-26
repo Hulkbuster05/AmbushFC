@@ -45,6 +45,9 @@ useEffect(() => {
     setPartidos(data || [])
   }
 
+  console.log("PARTIDOS:", data)
+  console.log("ERROR:", error)
+
   const crearPartido = async () => {
     const fechaUTC = new Date(fechaHora).toISOString()
     await supabase.from('partidos').insert({
