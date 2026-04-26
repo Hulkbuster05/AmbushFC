@@ -483,7 +483,9 @@ useEffect(() => {
   <button
     style={{
       ...styles.secondaryBtn,
-      marginTop: 5,
+      marginTop: 8,
+      padding: '6px',
+      fontSize: 12,
       background: partido.estado === 'cerrado' ? '#2e7d32' : '#b71c1c'
     }}
     onClick={async () => {
@@ -524,7 +526,14 @@ useEffect(() => {
 )}
 
       {esAdmin && (
-        <button style={styles.deleteBtn} onClick={() => {
+        <button style={{
+          ...styles.secondaryBtn,
+          marginTop: 8,
+          padding: '6px',
+          fontSize: 12,
+          background: '#000'
+        }} 
+        onClick={() => {
           const confirmar = window.confirm("¿Eliminar este partido?")
           if (!confirmar) return
           eliminarPartido(partido.id)
