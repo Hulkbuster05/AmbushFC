@@ -271,15 +271,24 @@ useEffect(() => {
 
   return (
     <div style={styles.card}>
-      <h3>{partido.cancha}{partido.estado === 'cerrado' && ' 🔒 '}</h3>
+      <h3>{partido.cancha} {partido.estado === 'cerrado' ? '🔒' : '🟢'}</h3>
       <p style={{ margin: 0, fontSize: 14, opacity: 0.8 }}>
   {new Date(partido.fecha_hora).toLocaleString()}
 </p>
 
       <div style={styles.row}>
     <button
-      style={styles.blueBtn}
-      onClick={async () => {
+  style={{
+    ...styles.blueBtn,
+    opacity: partido.estado === 'cerrado' ? 0.5 : 1
+  }}
+  disabled={partido.estado === 'cerrado'}
+  onClick={async () => {
+    if (partido.estado === 'cerrado') {
+      alert("El partido está cerrado")
+      return
+    }
+
     const { data } = await supabase.auth.getUser()
     const user = data.user
 
@@ -304,8 +313,17 @@ useEffect(() => {
 </button>
 
     <button
-  style={styles.redBtn}
+  style={{
+    ...styles.redBtn,
+    opacity: partido.estado === 'cerrado' ? 0.5 : 1
+  }}
+  disabled={partido.estado === 'cerrado'}
   onClick={async () => {
+    if (partido.estado === 'cerrado') {
+      alert("El partido está cerrado")
+      return
+    }
+
     const { data } = await supabase.auth.getUser()
     const user = data.user
 
@@ -370,6 +388,50 @@ useEffect(() => {
 </div>
 
       <button style={styles.secondaryBtn} onClick={ver}>Ver Partido</button>
+      
+      {esAdmin && (
+  <button
+    style={{
+      ...styles.secondaryBtn,
+      marginTop: 5,
+      background: partido.estado === 'cerrado' ? '#2e7d32' : '#b71c1c'
+    }}
+    onClick={async () => {
+      const nuevoEstado = partido.estado === 'cerrado' ? 'abierto' : 'cerrado'
+
+      const confirmar = window.confirm(
+        nuevoEstado === 'cerrado'
+          ? "¿Cerrar partido?"
+          : "¿Reabrir partido?"
+      )
+
+      if (!confirmar) return
+
+      const { error } = await supabase
+        .from('partidos')
+        .update({ estado: nuevoEstado })
+        .eq('id', partido.id)
+
+      if (error) {
+        console.log(error)
+        alert("Error al cambiar estado")
+        return
+      }
+
+      alert(
+        nuevoEstado === 'cerrado'
+          ? "Partido cerrado 🔒"
+          : "Partido abierto 🟢"
+      )
+
+      window.location.reload()
+    }}
+  >
+    {partido.estado === 'cerrado'
+      ? 'Abrir Partido 🟢'
+      : 'Cerrar Partido 🔒'}
+  </button>
+)}
 
       {esAdmin && (
         <button style={styles.deleteBtn} onClick={() => {
@@ -571,27 +633,19 @@ function PartidoEnVivo({ partido, volver }) {
               style={styles.redBtn}
               display="flex"
               justifyContent="space-between"
-              onClick={() => registrarGol('B', j)}
+              onClick={() => {
+  if (partido.estado === 'cerrado') {
+    alert("Partido cerrado")
+    return
+  }
+  registrarGol('B', j)
+}}
             >
               <span>{j.nombre}</span>
             </button>
           ))}
         </div>
       </div>
-
-<button
-  style={styles.secondaryBtn}
-  onClick={async () => {
-    await supabase
-      .from('partidos')
-      .update({ estado: 'cerrado' })
-      .eq('id', partido.id)
-
-    alert("Partido cerrado")
-  }}
->
-  Cerrar Partido 🔒
-</button>
 
       <button style={styles.deleteBtn} onClick={volver}>
         Volver
