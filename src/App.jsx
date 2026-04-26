@@ -814,9 +814,9 @@ setMvp(ranking[0] || null)
           background: '#0006',
           padding: 15,
           borderRadius: 12,
-          minWidth: 120,
+          minWidth: 0,
           textAlign: 'center',
-          flex: '1'
+          flex: '1 1 120px'
         }}>
           <h4 style={{ marginBottom: 10 }}>{t.nombre}</h4>
 
@@ -950,6 +950,7 @@ const styles = {
     backgroundrepeat: 'no-repeat',
     minHeight: '100vh',
     width: '100%',
+    overflowX: 'hidden',
     fontFamily: 'Oswald, sans-serif'
   },
   overlay: {
@@ -958,7 +959,8 @@ const styles = {
     minHeight: '100vh',
     width: '100%',
     padding: 30,
-    color: 'white'
+    color: 'white',
+    overflowX: 'hidden'
   },
   header: {
     display: 'flex',
