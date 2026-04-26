@@ -949,32 +949,51 @@ function Perfil() {
     cargarPerfil()
   }, [])
 
-  const cargarPerfil = async () => {
-    const { data: userData } = await supabase.auth.getUser()
-    const u = userData.user
-    setUser(u)
+const cargarPerfil = async () => {
+  const { data: userData } = await supabase.auth.getUser()
+  const u = userData.user
+  setUser(u)
 
-    // 🔥 traer goles del usuario
-    const { data: goles } = await supabase
-      .from('goles')
-      .select('*')
-      .eq('usuario_id', u.id)
+  // 🔥 traer goles
+  const { data: goles } = await supabase
+    .from('goles')
+    .select('*')
+    .eq('usuario_id', u.id)
 
-    const total = goles.length
-    const blue = goles.filter(g => g.equipo === 'A').length
-    const red = goles.filter(g => g.equipo === 'B').length
+  // 🔥 traer partidos (para saber cancha)
+  const { data: partidos } = await supabase
+    .from('partidos')
+    .select('id, cancha')
 
-    setStats({ total, blue, red })
+  let total = 0
+  let blue = 0
+  let red = 0
+  let americano = 0
+  let colon = 0
 
-    // 🔥 traer preferencia
-    const { data } = await supabase
-      .from('perfil_usuario')
-      .select('*')
-      .eq('usuario_id', u.id)
-      .maybeSingle()
+  (goles || []).forEach(g => {
+    total++
 
-    setEquipo(data?.equipo_preferido || null)
-  }
+    if (g.equipo === 'A') blue++
+    if (g.equipo === 'B') red++
+
+    const partido = partidos.find(p => p.id === g.partido_id)
+
+    if (partido?.cancha === 'Americano') americano++
+    if (partido?.cancha === 'Colon') colon++
+  })
+
+  setStats({ total, blue, red, americano, colon })
+
+  // 🔥 equipo preferido
+  const { data } = await supabase
+    .from('perfil_usuario')
+    .select('*')
+    .eq('usuario_id', u.id)
+    .maybeSingle()
+
+  setEquipo(data?.equipo_preferido || null)
+}
 
   const guardarEquipo = async (eq) => {
     const user = (await supabase.auth.getUser()).data.user
@@ -991,44 +1010,116 @@ function Perfil() {
 
   if (!user || !stats) return <p>Cargando...</p>
 
+const cardStat = {
+  flex: 1,
+  background: '#0006',
+  padding: 15,
+  borderRadius: 12,
+  textAlign: 'center'
+}
+  
   return (
-    <div>
+  <div>
 
-      <h2>👤 Perfil</h2>
+    {/* 👤 HEADER */}
+    <div style={{
+      background: '#0006',
+      padding: 20,
+      borderRadius: 15,
+      marginBottom: 20
+    }}>
+      <h2>
+        👤 {user.user_metadata?.nombre || user.email}
+      </h2>
 
-      <p><strong>Nombre:</strong> {user.user_metadata?.nombre}</p>
-      <p><strong>Correo:</strong> {user.email}</p>
+      <p style={{ opacity: 0.8 }}>
+        📧 {user.email}
+      </p>
+    </div>
 
-      <h3 style={{ marginTop: 20 }}>⚽ Estadísticas</h3>
+    {/* ⚽ STATS */}
+    <h3>⚽ Estadísticas</h3>
 
-      <p>Total goles: {stats.total}</p>
-      <p>🔵 BLUE: {stats.blue}</p>
-      <p>🔴 RED: {stats.red}</p>
+    <div style={{
+      display: 'flex',
+      gap: 10,
+      flexWrap: 'wrap',
+      marginTop: 10
+    }}>
 
-      <h3 style={{ marginTop: 20 }}>⭐ Equipo Preferido</h3>
+      <div style={cardStat}>
+        <h3>⚽</h3>
+        <p>{stats.total}</p>
+        <small>Total</small>
+      </div>
 
-      <button
-        style={{
-          ...styles.blueBtn,
-          opacity: equipo === 'A' ? 1 : 0.5
-        }}
-        onClick={() => guardarEquipo('A')}
-      >
-        🔵 BLUE
-      </button>
+      <div style={{ ...cardStat, background: '#007bff33' }}>
+        <h3>🔵</h3>
+        <p>{stats.blue}</p>
+        <small>BLUE</small>
+      </div>
 
-      <button
-        style={{
-          ...styles.redBtn,
-          opacity: equipo === 'B' ? 1 : 0.5
-        }}
-        onClick={() => guardarEquipo('B')}
-      >
-        🔴 RED
-      </button>
+      <div style={{ ...cardStat, background: '#ff4d4d33' }}>
+        <h3>🔴</h3>
+        <p>{stats.red}</p>
+        <small>RED</small>
+      </div>
+
+      <div style={cardStat}>
+        <h3>🏟️</h3>
+        <p>{stats.americano}</p>
+        <small>Americano</small>
+      </div>
+
+      <div style={cardStat}>
+        <h3>🏟️</h3>
+        <p>{stats.colon}</p>
+        <small>Colón</small>
+      </div>
 
     </div>
-  )
+
+    {/* ⭐ EQUIPO */}
+    <div style={{ marginTop: 30 }}>
+
+      <h3>⭐ Equipo Preferido</h3>
+
+      <div style={{
+        display: 'flex',
+        gap: 10,
+        marginTop: 10
+      }}>
+
+        <button
+          style={{
+            ...styles.blueBtn,
+            flex: 1,
+            opacity: equipo === 'A' ? 1 : 0.5,
+            border: equipo === 'A' ? '2px solid white' : 'none'
+          }}
+          onClick={() => guardarEquipo('A')}
+        >
+          🔵 BLUE
+        </button>
+
+        <button
+          style={{
+            ...styles.redBtn,
+            flex: 1,
+            opacity: equipo === 'B' ? 1 : 0.5,
+            border: equipo === 'B' ? '2px solid white' : 'none'
+          }}
+          onClick={() => guardarEquipo('B')}
+        >
+          🔴 RED
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)
 }
 
 const styles = {
