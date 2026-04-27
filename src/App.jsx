@@ -1156,6 +1156,9 @@ function Stats() {
 
   if (!partidos || !goles) return
 
+  // 🔥 SOLO GOLES CON USUARIO REAL
+  const golesValidos = goles.filter(g => g.usuario_id)
+
   // 🏆 TABLAS EQUIPOS
   setTablaGlobal(calcularTabla(partidos, goles))
 
@@ -1167,7 +1170,7 @@ function Stats() {
 
 const conteo = {}
 
-goles.forEach(g => {
+golesValidos.forEach(g => {
   if (!conteo[g.usuario_id]) {
     conteo[g.usuario_id] = {
       nombre: g.jugador,
