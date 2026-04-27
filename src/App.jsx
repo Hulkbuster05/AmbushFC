@@ -1186,11 +1186,13 @@ golesValidos.forEach(g => {
       nombre: g.jugador,
       goles: 0,
       americano: 0,
-      colon: 0
+      colon: 0,
+      partidos: new Set()
     }
   }
 
   conteo[g.usuario_id].goles++
+  conteo[g.usuario_id].partidos.add(g.partido_id)
 
   // 🔥 identificar cancha
   const partido = partidos.find(p => p.id === g.partido_id)
@@ -1208,7 +1210,8 @@ golesValidos.forEach(g => {
 const ranking = Object.values(conteo)
   .map(j => ({
     ...j,
-    promedio: (j.goles / (partidos.length || 1)).toFixed(2)
+    partidosJugados: j.partidos.size,
+    promedio: (j.goles / (j.partidos.size || 1)).toFixed(2)
   }))
   .sort((a, b) => b.goles - a.goles)
 
@@ -1294,7 +1297,7 @@ return (
             margin: '5px 0',
             borderRadius: 8
           }}>
-            #{i + 1} {g.nombre} - {g.goles} goles
+            #{i + 1} {g.nombre} - {g.goles} ⚽ | {g.partidosJugados} PJ | {g.promedio} prom
           </div>
         ))}
       </>
