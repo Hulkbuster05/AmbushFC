@@ -1239,6 +1239,32 @@ const handleAuth = async () => {
         {modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
       </button>
 
+    {modo === 'login' && (
+  <button
+    style={{ ...styles.secondaryBtn, marginTop: 5 }}
+    onClick={async () => {
+      if (!email) {
+        alert('Ingresa tu correo primero')
+        return
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset'
+      })
+
+      if (error) {
+        console.log(error)
+        alert('Error enviando correo')
+        return
+      }
+
+      alert('Correo enviado 📩 revisa tu email')
+    }}
+  >
+    ¿Olvidaste tu contraseña?
+  </button>
+)}
+
       <button
         style={styles.secondaryBtn}
         onClick={() =>
