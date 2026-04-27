@@ -18,6 +18,7 @@ export default function App() {
   const [rol, setRol] = useState(null)
 
   const esAdmin = rol === 'admin'
+  console.log("ROL ACTUAL:", rol)
   const esModerador = rol === 'moderador'
 
 useEffect(() => {
