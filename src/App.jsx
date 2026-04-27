@@ -367,16 +367,14 @@ if (!user) {
     </Routes>
 
     {/* MENÚ */}
-    <MenuNavegacion />
+    <MenuNavegacion esAdmin={esAdmin} />
 
   </Pantalla>
 )
 
-
-
 }
 
-function MenuNavegacion() {
+function MenuNavegacion({ esAdmin } ) {
   const navigate = useNavigate()
 
   return (
@@ -866,7 +864,7 @@ const eliminarJugador = async (usuario_id) => {
 
   return (
     <Pantalla>
-      <h1 style={styles.brandSmall}>Partido en Vivo</h1>
+      <h1 style={styles.brandSmall}>Partido En Vivo</h1>
 
       <div style={styles.scoreContainer}>
         <div style={styles.teamScore}>
