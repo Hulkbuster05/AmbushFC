@@ -41,8 +41,16 @@ useEffect(() => {
 useEffect(() => {
   if (editando) {
     setCancha(editando.cancha)
-    setJugadores(editando.jugadores)
-    setFechaHora(editando.fecha_hora?.slice(0, 16))
+    setJugadores(editando.jugadores.toString())
+
+    const fechaLocal = new Date(editando.fecha_hora)
+    const offset = fechaLocal.getTimezoneOffset()
+
+    const fechaAjustada = new Date(fechaLocal.getTime() - offset * 60000)
+      .toISOString()
+      .slice(0, 16)
+
+    setFechaHora(fechaAjustada)
   }
 }, [editando])
 
