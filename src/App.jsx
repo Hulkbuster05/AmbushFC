@@ -38,6 +38,14 @@ useEffect(() => {
   }
 }, [])
 
+useEffect(() => {
+  if (editando) {
+    setCancha(editando.cancha)
+    setJugadores(editando.jugadores)
+    setFechaHora(editando.fecha_hora?.slice(0, 16))
+  }
+}, [editando])
+
   const cargarPartidos = async () => {
   const { data, error } = await supabase
     .from('partidos')
@@ -56,15 +64,47 @@ useEffect(() => {
 
   const crearPartido = async () => {
     const fechaUTC = new Date(fechaHora).toISOString()
-    await supabase.from('partidos').insert({
-      fecha_hora: fechaUTC,
-      cancha,
-      jugadores,
-      estado: 'abierto'
-    })
+
+    if (editando) {
+      const { error } = await supabase
+        .from('partidos')
+        .update({ fecha_hora: fechaUTC, cancha, jugadores })
+        .eq('id', editando.id)
+
+    if (error) {
+      console.log(error)
+      alert("Error al actualizar partido")
+      return
+    }
+
+    alert("Partido actualizado ✏️")
+
+    } else {
+      // CREAR NUEVO PARTIDO
+      const { error } = await supabase.from('partidos').insert({
+        fecha_hora: fechaUTC,
+        cancha,
+        jugadores,
+        estado: 'abierto'
+      })
+
+      if (error) {
+        console.log(error)
+        alert("Error al crear partido")
+        return
+      }
+
+      alert("Partido creado ✔")
+    }
+
+     setEditando(null)
     setMostrarForm(false)
+    setCancha('')
+    setJugadores('')
+    setFechaHora('')
+
     cargarPartidos()
-  }
+    }
 
   const eliminarPartido = async (id) => {
     await supabase.from('partidos').delete().eq('id', id)
@@ -231,8 +271,25 @@ if (!user) {
               onChange={(e) => setJugadores(e.target.value)}
             />
             <button style={styles.primaryBtn} onClick={crearPartido}>
-              Guardar
+              {editando ? 'Actualizar Partido' : 'Guardar'}
             </button>
+
+          <button
+  style={{
+    ...styles.secondaryBtn,
+    marginTop: 8
+  }}
+  onClick={() => {
+    setEditando(null)
+    setMostrarForm(false)
+    setCancha('')
+    setJugadores('')
+    setFechaHora('')
+  }}
+>
+  Cancelar
+</button>
+
           </div>
         )}
       </>
