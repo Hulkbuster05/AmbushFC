@@ -15,13 +15,32 @@ export default function App() {
   const [cancha, setCancha] = useState('')
   const [jugadores, setJugadores] = useState('')
   const [fechaHora, setFechaHora] = useState('')
+  const [rol, setRol] = useState(null)
 
-  const esAdmin = user?.email === 'alejandro012698@gmail.com'
+  const esAdmin = rol === 'admin'
+  const esModerador = rol === 'moderador'
 
 useEffect(() => {
   const getUser = async () => {
     const { data } = await supabase.auth.getUser()
-    setUser(data.user)
+
+    const user = data.user
+    setUser(user)
+
+    if (user) {
+      const { data: rolData, error } = await supabase
+        .from('roles_usuario')
+        .select('rol')
+        .eq('id', user.id)
+        .single()
+
+      if (error) {
+        console.log("Error rol:", error)
+      }
+
+      setRol(rolData?.rol || 'jugador')
+    }
+
     cargarPartidos()
   }
 
@@ -177,7 +196,8 @@ if (!user) {
       <PartidoEnVivo 
         partido={partidoEnVivo}
         volver={() => setPartidoEnVivo(null)}
-        esAdmin={true}
+        esAdmin={esAdmin}
+        esModerador={esModerador}
       />
     )
   }
@@ -235,7 +255,7 @@ if (!user) {
   </button>
 </div>
 
-    {esAdmin && (
+    {(esAdmin || esModerador) && (
       <>
         {!mostrarForm && (
           <button
@@ -323,6 +343,7 @@ if (!user) {
           salirEquipo={salirEquipo}
           eliminarPartido={eliminarPartido}
           esAdmin={esAdmin}
+          esModerador={esModerador}
           ver={() => setPartidoEnVivo(p)}
           modoEdicion={modoEdicion}
           onEditar={(p) => {
@@ -339,7 +360,10 @@ if (!user) {
 
       <Route path="/stats" element={<Stats />} />
       <Route path="/perfil" element={<Perfil />} />
-
+      <Route path="/reset" element={<ResetPassword />} />
+      <Route 
+        path="/roles" 
+        element={esAdmin ?<PanelRoles /> : <Navigate to="/inicio" /> } />
     </Routes>
 
     {/* MENÚ */}
@@ -347,6 +371,9 @@ if (!user) {
 
   </Pantalla>
 )
+
+
+
 }
 
 function MenuNavegacion() {
@@ -358,11 +385,14 @@ function MenuNavegacion() {
       <button onClick={() => navigate('/partidos')}>⚽</button>
       <button onClick={() => navigate('/stats')}>📊</button>
       <button onClick={() => navigate('/perfil')}>👤</button>
+      {esAdmin && (
+      <button onClick={() => navigate('/roles')}>🛠</button>
+      )}
     </div>
   )
 }
 
-function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEquipo, modoEdicion, onEditar
+function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, esModerador, ver, salirEquipo, modoEdicion, onEditar
  }) {
   const [conteo, setConteo] = useState({ A: 0, B: 0 })
   const [golesA, setGolesA] = useState(0)
@@ -692,7 +722,7 @@ useEffect(() => {
   )
 }
 
-function PartidoEnVivo({ partido, volver ,esAdmin}) {
+function PartidoEnVivo({ partido,volver,esAdmin,esModerador}) {
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
   const [goles, setGoles] = useState([])
@@ -896,7 +926,7 @@ const eliminarJugador = async (usuario_id) => {
               }}>
                 <span>{g.minuto}'</span>
 
-                {partido.estado === 'abierto' && (
+                {partido.estado === 'abierto' && (esAdmin || esModerador) && (
                   <button
                     style={{
                       background: 'red',
@@ -964,7 +994,7 @@ const eliminarJugador = async (usuario_id) => {
               }}>
                 <span>{g.minuto}'</span>
 
-                {partido.estado === 'abierto' && (
+                {partido.estado === 'abierto' && (esAdmin || esModerador) && (
                   <button
                     style={{
                       background: 'red',
@@ -1020,7 +1050,7 @@ const eliminarJugador = async (usuario_id) => {
     </button>
 
     {/* BOTÓN ADMIN ❌ */}
-    {esAdmin && partido.estado === 'abierto' && (
+    {(esAdmin || esModerador) && partido.estado === 'abierto' && (
       <button
         style={{
           background: 'red',
@@ -1087,7 +1117,7 @@ const eliminarJugador = async (usuario_id) => {
     </button>
 
     {/* BOTÓN ADMIN ❌ */}
-    {esAdmin && partido.estado === 'abierto' && (
+    {(esAdmin || esModerador) && partido.estado === 'abierto' && (
       <button
         style={{
           background: 'black',
@@ -1274,6 +1304,48 @@ const handleAuth = async () => {
         {modo === 'login'
           ? '¿No tienes cuenta? Regístrate'
           : '¿Ya tienes cuenta? Inicia Sesión'}
+      </button>
+    </div>
+  )
+}
+
+function ResetPassword() {
+  const [password, setPassword] = useState('')
+
+  const cambiarPassword = async () => {
+    if (!password) {
+      alert('Ingresa una contraseña')
+      return
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password
+    })
+
+    if (error) {
+      console.log(error)
+      alert('Error al cambiar contraseña')
+      return
+    }
+
+    alert('Contraseña actualizada ✔')
+    window.location.href = '/'
+  }
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Nueva contraseña</h2>
+
+      <input
+        type="password"
+        placeholder="Nueva contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={styles.input}
+      />
+
+      <button style={styles.primaryBtn} onClick={cambiarPassword}>
+        Guardar
       </button>
     </div>
   )
@@ -1738,6 +1810,87 @@ const cardStat = {
 
   </div>
 )
+}
+
+function PanelRoles() {
+  const [usuarios, setUsuarios] = useState([])
+
+  const cargarUsuarios = async () => {
+    const { data, error } = await supabase
+      .from('perfil_usuario')
+      .select(`
+        usuario_id,
+        nombre,
+        email,
+        roles_usuario ( rol )
+      `)
+
+    if (error) {
+      console.log("Error cargando usuarios:", error)
+      return
+    }
+
+    setUsuarios(data)
+  }
+
+  const cambiarRol = async (userId, nuevoRol) => {
+    const { error } = await supabase
+      .from('roles_usuario')
+      .upsert({
+        id: userId,
+        rol: nuevoRol
+      })
+
+    if (error) {
+      alert("Error al cambiar rol")
+      return
+    }
+
+    cargarUsuarios()
+  }
+
+  useEffect(() => {
+    cargarUsuarios()
+  }, [])
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>🛠 Panel de Roles</h2>
+
+      {usuarios.map((u) => (
+        <div key={u.usuario_id} style={{
+          background: '#0006',
+          padding: 10,
+          margin: '5px 0',
+          borderRadius: 8
+        }}>
+          <div><strong>{u.nombre || 'Sin nombre'}</strong></div>
+
+          <div style={{ fontSize: 12, opacity: 0.7 }}>
+            {u.email}
+          </div>
+
+          <div style={{ marginTop: 5 }}>
+            Rol: {u.roles_usuario?.rol || 'jugador'}
+          </div>
+
+          <div style={{ display: 'flex', gap: 5, marginTop: 5 }}>
+            <button onClick={() => cambiarRol(u.usuario_id, 'jugador')}>
+              Jugador
+            </button>
+
+            <button onClick={() => cambiarRol(u.usuario_id, 'moderador')}>
+              Moderador
+            </button>
+
+            <button onClick={() => cambiarRol(u.usuario_id, 'admin')}>
+              Admin
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const styles = {
