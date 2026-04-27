@@ -253,6 +253,7 @@ if (!user) {
           <div style={styles.cardForm}>
             <select
               style={styles.input}
+              value={cancha}
               onChange={(e) => setCancha(e.target.value)}
             >
               <option value="">Seleccionar cancha</option>
@@ -263,11 +264,13 @@ if (!user) {
             <input
               type="datetime-local"
               style={styles.input}
+              value={fechaHora}
               onChange={(e) => setFechaHora(e.target.value)}
             />
             <input
               placeholder="# jugadores"
               style={styles.input}
+              value={jugadores}
               onChange={(e) => setJugadores(e.target.value)}
             />
             <button style={styles.primaryBtn} onClick={crearPartido}>
