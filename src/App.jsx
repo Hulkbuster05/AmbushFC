@@ -731,15 +731,15 @@ const eliminarJugador = async (usuario_id) => {
         <div
           style={{ cursor: 'pointer' }}
           onClick={() => {
-            grupo.expandido = !grupo.expandido
-            setGoles([...goles]) // fuerza render
-          }}
+            const key = `${grupo.jugador}_A`
+  setDetalle(detalle === key ? null : key)
+}}
         >
           ⚽ {grupo.jugador} ({grupo.minutos.length})
         </div>
 
         {/* DETALLE */}
-        {grupo.expandido && (
+        {detalle === `${grupo.jugador}_A` && (
           <div style={{ marginTop: 4 }}>
             {grupo.goles.map(g => (
               <div key={g.id} style={{
@@ -798,15 +798,15 @@ const eliminarJugador = async (usuario_id) => {
         <div
           style={{ cursor: 'pointer' }}
           onClick={() => {
-            grupo.expandido = !grupo.expandido
-            setGoles([...goles])
-          }}
+  const key = `${grupo.jugador}_B`
+  setDetalle(detalle === key ? null : key)
+}}
         >
           ({grupo.minutos.length}) {grupo.jugador} ⚽
         </div>
 
         {/* DETALLE */}
-        {grupo.expandido && (
+        {detalle === `${grupo.jugador}_B` && (
           <div style={{ marginTop: 4 }}>
             {grupo.goles.map(g => (
               <div key={g.id} style={{
