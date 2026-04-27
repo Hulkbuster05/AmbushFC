@@ -1151,10 +1151,20 @@ function Stats() {
   }
 
   const cargarStats = async () => {
-    const { data: partidos } = await supabase.from('partidos').select('*')
-    const { data: goles } = await supabase.from('goles').select('*')
+    const { data: partidos } = await supabase
+      .from('partidos')
+      .select('*')
+      .eq('estado', 'cerrado')
 
-  if (!partidos || !goles) return
+      if (!partidos) return
+
+    const partidosIds = partidos.map(p => p.id)
+    const { data: goles } = await supabase
+      .from('goles')
+      .select('*')
+      .in('partido_id', partidosIds)
+
+      if (!goles) return
 
   // 🔥 SOLO GOLES CON USUARIO REAL
   const golesValidos = goles.filter(g => g.usuario_id)
