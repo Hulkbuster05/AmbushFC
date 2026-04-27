@@ -285,7 +285,7 @@ if (!user) {
               value={cancha}
               onChange={(e) => setCancha(e.target.value)}
             >
-              <option value="">Seleccionar cancha</option>
+              <option value="">Seleccionar Cancha</option>
               <option value="Americano">Americano</option>
               <option value="Colon">Colón</option>
             </select>
@@ -451,7 +451,7 @@ useEffect(() => {
 
   return (
     <div style={styles.card}>
-      {esAdmin && modoEdicion && (
+      {esAdmin || esModerador && modoEdicion && (
   <div style={{
     position: 'absolute',
     top: 8,
@@ -810,7 +810,7 @@ const gruposB = agruparSimple(goles.filter(g => g.equipo === 'B'))
     .eq('id', id)
 
   if (error) {
-    console.log("ERROR AL ELIMINAR:", error)
+    console.log("ERROR ELIMINAR GOL:", error)
     alert("No se pudo eliminar el gol")
     return
   }
@@ -835,7 +835,7 @@ const eliminarJugador = async (usuario_id) => {
     .eq('usuario_id', usuario_id)
 
   if (error) {
-    console.log("ERROR AL ELIMINAR JUGADOR:", error)
+    console.log("ERROR ELIMINAR JUGADOR:", error)
     alert("No se pudo eliminar el jugador")
     return
   }
@@ -1018,7 +1018,6 @@ const eliminarJugador = async (usuario_id) => {
       </div>
     </div>
   ))}
-
 </div>
 
       <div style={styles.playersWrapper}>
