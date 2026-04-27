@@ -7,6 +7,8 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [partidos, setPartidos] = useState([])
   const [mostrarForm, setMostrarForm] = useState(false)
+  const [modoEdicion, setModoEdicion] = useState(false)
+  const [editando, setEditando] = useState(null)
   const [partidoEnVivo, setPartidoEnVivo] = useState(null)
   const [vista, setVista] = useState('partidos')
   const [filtroEstado, setFiltroEstado] = useState('abierto')
@@ -69,7 +71,17 @@ useEffect(() => {
     cargarPartidos()
   }
 
-  const unirse = async (partidoId, equipo) => {
+  const unirse = async (partidoId, equipo,cupoMax) => {
+    const { data: jugadores } = await supabase
+      .from('partido_jugadores')
+      .select('*')
+      .eq('partido_id', partidoId)
+      .eq('equipo', equipo)
+    
+    if (jugadores.length >= cupoMax) {
+      alert('El equipo está lleno')
+      return
+    }
     await supabase.from('partido_jugadores').insert({
       partido_id: partidoId,
       usuario_id: user.id,
@@ -144,7 +156,7 @@ if (!user) {
   <Route path="/inicio" element={
     <div>
       <h2>Bienvenido a Derbys Ambush FC</h2>
-      <p>⚽ Usa el menú para navegar ⚽</p>
+      <p>⚽ Usa el Menú Para Navegar ⚽</p>
     </div>
     } />
   <Route path="/partidos" element={
@@ -185,6 +197,17 @@ if (!user) {
             + Crear partido
           </button>
         )}
+
+          <button
+            style={{
+            ...styles.secondaryBtn,
+            marginLeft: 10,
+            background: modoEdicion ? '#ff9800' : '#ffffff22'
+        }}
+            onClick={() => setModoEdicion(!modoEdicion)}
+          >
+            ✏️ Editar Partido
+          </button>
 
         {mostrarForm && (
           <div style={styles.cardForm}>
@@ -233,6 +256,12 @@ if (!user) {
           eliminarPartido={eliminarPartido}
           esAdmin={esAdmin}
           ver={() => setPartidoEnVivo(p)}
+          modoEdicion={modoEdicion}
+          onEditar={(p) => {
+            setEditando(p)
+            setMostrarForm(true)
+            setModoEdicion(false)
+        }}
         />
       ))}
     </div>
@@ -265,7 +294,7 @@ function MenuNavegacion() {
   )
 }
 
-function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEquipo
+function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, ver, salirEquipo, modoEdicion, onEditar
  }) {
   const [conteo, setConteo] = useState({ A: 0, B: 0 })
   const [golesA, setGolesA] = useState(0)
@@ -325,6 +354,30 @@ useEffect(() => {
 
   return (
     <div style={styles.card}>
+      {esAdmin && modoEdicion && (
+  <div style={{
+    position: 'absolute',
+    top: 8,
+    right: 8
+  }}>
+    <button
+      style={{
+        background: '#ff9800',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+        border: 'none',
+        color: 'white',
+        borderRadius: 6,
+        cursor: 'pointer',
+        padding: '4px 6px',
+        fontSize: 12,
+        zIndex: 10
+      }}
+      onClick={() => onEditar(partido)}
+    >
+      ✏️
+    </button>
+  </div>
+)}
       <div style={{ marginBottom: 8 }}>
   <div style={{ fontWeight: 'bold', fontSize: 16 }}>
     {partido.cancha} {partido.estado === 'cerrado' ? '🔒' : '🟢'}
@@ -359,11 +412,24 @@ useEffect(() => {
       .maybeSingle()
 
     if (actual?.equipo === 'A') {
-      await salirEquipo(partido.id)
-    } else {
-      await salirEquipo(partido.id)
-      await unirse(partido.id, 'A')
-    }
+  await salirEquipo(partido.id)
+} else {
+
+  // 🔥 VALIDAR CUPO ANTES
+  const { data: jugadores } = await supabase
+    .from('partido_jugadores')
+    .select('*')
+    .eq('partido_id', partido.id)
+    .eq('equipo', 'A')
+
+  if (jugadores.length >= partido.jugadores) {
+    alert('Cupo lleno')
+    return
+  }
+
+  await salirEquipo(partido.id)
+  await unirse(partido.id, 'A', partido.jugadores)
+}
 
     cargarConteo()
   }}
@@ -394,11 +460,24 @@ useEffect(() => {
       .maybeSingle()
 
     if (actual?.equipo === 'B') {
-      await salirEquipo(partido.id)
-    } else {
-      await salirEquipo(partido.id)
-      await unirse(partido.id, 'B')
-    }
+  await salirEquipo(partido.id)
+} else {
+
+  // 🔥 VALIDAR CUPO ANTES
+  const { data: jugadores } = await supabase
+    .from('partido_jugadores')
+    .select('*')
+    .eq('partido_id', partido.id)
+    .eq('equipo', 'B')
+
+  if (jugadores.length >= partido.jugadores) {
+    alert('Cupo lleno')
+    return
+  }
+
+  await salirEquipo(partido.id)
+  await unirse(partido.id, 'B', partido.jugadores)
+}
 
     cargarConteo()
   }}
@@ -1609,6 +1688,7 @@ const styles = {
     gap: 20
   },
   card: {
+    position: 'relative',
     background: 'rgba(0,0,0,0.5)',
     borderRadius: 16,
     padding: 12,
