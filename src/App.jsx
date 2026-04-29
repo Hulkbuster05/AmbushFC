@@ -768,6 +768,10 @@ function PartidoEnVivo({ partido,volver,esAdmin,esModerador}) {
 
   const golesA = goles.filter(g => g.equipo === 'A').length
   const golesB = goles.filter(g => g.equipo === 'B').length
+  const usuariosDisponibles = usuarios.filter(u =>
+  ![...jugadoresA, ...jugadoresB]
+    .some(j => j.usuario_id === u.usuario_id)
+)
 
   // 🔥 AGRUPAR GOLES SIMPLE (SIN COMPLICARSE)
 const agruparSimple = (lista) => {
@@ -1297,9 +1301,9 @@ const agregarJugadorManual = async (usuario, equipo) => {
             overflowY: 'auto'
           }}>
 
-            <h3 style={{ marginBottom: 10 }}>Seleccionar jugador</h3>
+            <h3 style={{ marginBottom: 10 }}>Seleccionar Jugador</h3>
 
-            {usuarios.map(u => (
+            {usuariosDisponibles.map(u => (
               <div
                 key={u.usuario_id}
                 style={{
@@ -1312,6 +1316,16 @@ const agregarJugadorManual = async (usuario, equipo) => {
                 {u.nombre}
               </div>
             ))}
+
+            {usuariosDisponibles.length === 0 && (
+            <div style={{
+            textAlign: 'center',
+            marginTop: 10,
+           opacity: 0.7
+             }}>
+    Todos los jugadores ya están en el partido
+  </div>
+)}
 
             <button
               style={{
