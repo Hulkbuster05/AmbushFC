@@ -1110,7 +1110,7 @@ const agregarJugadorManual = async (usuario, equipo) => {
 <div style={{
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
-  gap: 6
+  gap: 4
 }}>
   {jugadoresA.map((j, i) => (
             
@@ -1205,7 +1205,7 @@ const agregarJugadorManual = async (usuario, equipo) => {
   <div style={{
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
-  gap: 6
+  gap: 4
 }}>
   {jugadoresB.map((j, i) => (
     <div
