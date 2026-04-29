@@ -1105,20 +1105,27 @@ const agregarJugadorManual = async (usuario, equipo) => {
 
       <div style={styles.playersWrapper}>
         <div style={styles.teamBox}>
-          <h3>BLUE</h3>
-          {jugadoresA.map((j, i) => (
+         <h3>BLUE</h3>
+
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: 6
+}}>
+  {jugadoresA.map((j, i) => (
             
   <div
     key={i}
     style={{
       display: 'flex',
       alignItems: 'center',
-      gap: 6
+      gap: 4
     }}
   >
+
     {/* BOTÓN PARA GOL */}
     <button
-      style={{ ...styles.blueBtn, flex: 1 }}
+      style={{ ...styles.blueBtn, flex: 1, padding: '4px 6px', fontSize: 12 }}
       onClick={() => {
         if (partido.estado === 'cerrado') {
           alert("Partido cerrado")
@@ -1138,9 +1145,9 @@ const agregarJugadorManual = async (usuario, equipo) => {
           border: 'none',
           color: 'white',
           borderRadius: 6,
-          width: 20,
-          height: 20,
-          fontSize: 12,
+          width: 16,
+          height: 16,
+          fontSize: 10,
           cursor: 'pointer'
         }}
         onClick={() => eliminarJugador(j.usuario_id)}
@@ -1150,6 +1157,8 @@ const agregarJugadorManual = async (usuario, equipo) => {
     )}
   </div>
 ))}
+</div>
+
 
       {/* 🔥 BOTÓN DESCONOCIDO BLUE */}
 <div style={{ marginTop: 6 }}>
@@ -1192,18 +1201,24 @@ const agregarJugadorManual = async (usuario, equipo) => {
 
         <div style={styles.teamBox}>
           <h3>RED</h3>
-          {jugadoresB.map((j, i) => (
-  <div
-    key={i}
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6
-    }}
-  >
+
+  <div style={{
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: 6
+}}>
+  {jugadoresB.map((j, i) => (
+    <div
+      key={i}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4
+      }}
+    >
     {/* BOTÓN PARA GOL */}
     <button
-      style={{ ...styles.redBtn, flex: 1 }}
+      style={{ ...styles.redBtn, flex: 1, padding: '4px 6px', fontSize: 12 }}
       onClick={() => {
         if (partido.estado === 'cerrado') {
           alert("Partido cerrado")
@@ -1223,9 +1238,9 @@ const agregarJugadorManual = async (usuario, equipo) => {
           border: 'none',
           color: 'white',
           borderRadius: 6,
-          width: 20,
-          height: 20,
-          fontSize: 12,
+          width: 16,
+          height: 16,
+          fontSize: 10,
           cursor: 'pointer'
         }}
         onClick={() => eliminarJugador(j.usuario_id)}
@@ -1235,6 +1250,7 @@ const agregarJugadorManual = async (usuario, equipo) => {
     )}
   </div>
 ))}
+</div>
 
 {/* 🔥 BOTÓN DESCONOCIDO RED */}
 <div style={{ marginTop: 6 }}>
