@@ -904,17 +904,24 @@ const agregarJugadorManual = async (usuario, equipo) => {
     return
   }
 
-  await supabase.from('partido_jugadores').insert({
-    partido_id: partido.id,
-    usuario_id: usuario.usuario_id,
-    equipo,
-    nombre: usuario.nombre
-  })
+  const { error } = await supabase
+    .from('partido_jugadores')
+    .insert({
+      partido_id: partido.id,
+      usuario_id: usuario.usuario_id,
+      equipo,
+      nombre: usuario.nombre
+    })
+
+  if (error) {
+    console.log("ERROR INSERTAR JUGADOR:", error)
+    alert("No se pudo agregar el jugador")
+    return
+  }
 
   setMostrarSelector(null)
-  cargarTodo() 
+  cargarTodo()
 }
-
   useEffect(() => {
     cargarTodo()
 
