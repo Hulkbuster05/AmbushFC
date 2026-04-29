@@ -509,8 +509,8 @@ useEffect(() => {
       ? '#ff4d4d55'
       : '#ffffff22'
 }}>
-  {miEquipo === 'A' && '🔵 Estás en BLUE'}
-  {miEquipo === 'B' && '🔴 Estás en RED'}
+  {miEquipo === 'A' && '🔵 Te uniste al BLUE'}
+  {miEquipo === 'B' && '🔴 Te uniste al RED'}
   {!miEquipo && '⚪ No estás en ningún equipo'}
 </div>
 
@@ -761,6 +761,8 @@ useEffect(() => {
 function PartidoEnVivo({ partido,volver,esAdmin,esModerador}) {
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
+  const [usuarios, setUsuarios] = useState([])
+  const [mostrarSelector, setMostrarSelector] = useState(null) 
   const [goles, setGoles] = useState([])
   const [detalle, setDetalle] = useState(null)
 
@@ -878,6 +880,39 @@ const eliminarJugador = async (usuario_id) => {
   }
 
   cargarTodo()
+}
+
+const cargarUsuarios = async () => {
+  const { data } = await supabase
+    .from('perfil_usuario')
+    .select('usuario_id, nombre')
+
+  setUsuarios(data || [])
+}
+
+useEffect(() => {
+  cargarUsuarios()
+}, [])
+
+const agregarJugadorManual = async (usuario, equipo) => {
+  // evitar duplicados
+  const yaExiste = [...jugadoresA, ...jugadoresB]
+    .some(j => j.usuario_id === usuario.usuario_id)
+
+  if (yaExiste) {
+    alert("El jugador ya está en el partido")
+    return
+  }
+
+  await supabase.from('partido_jugadores').insert({
+    partido_id: partido.id,
+    usuario_id: usuario.usuario_id,
+    equipo,
+    nombre: usuario.nombre
+  })
+
+  setMostrarSelector(null)
+  cargarTodo() 
 }
 
   useEffect(() => {
@@ -1121,8 +1156,26 @@ const eliminarJugador = async (usuario_id) => {
       })
     }}
   >
-    ➕ Desconocido
+    ⚽ Desconocido
   </button>
+
+{(esAdmin || esModerador) && partido.estado === 'abierto' && (
+  <button
+    style={{
+      marginTop: 6,
+      width: '100%',
+      background: '#ffffff22',
+      border: 'none',
+      padding: 6,
+      borderRadius: 6,
+      cursor: 'pointer'
+    }}
+    onClick={() => setMostrarSelector('A')}
+  >
+    ➕ Agregar Jugador
+  </button>
+)}
+
 </div>
         </div>
 
@@ -1188,13 +1241,89 @@ const eliminarJugador = async (usuario_id) => {
       })
     }}
   >
-    ➕ Desconocido
+    ⚽ Desconocido
   </button>
+
+{(esAdmin || esModerador) && partido.estado === 'abierto' && (
+  <button
+    style={{
+      marginTop: 6,
+      width: '100%',
+      background: '#ffffff22',
+      border: 'none',
+      padding: 6,
+      borderRadius: 6,
+      cursor: 'pointer'
+    }}
+    onClick={() => setMostrarSelector('B')}
+  >
+    ➕ Agregar Jugador
+  </button>
+)}
+
 </div>
 
         </div>
 
       </div>
+
+      {/* 🔥 MODAL AGREGAR JUGADOR */}
+      {mostrarSelector && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: '#000000cc',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999
+        }}>
+          <div style={{
+            background: '#111',
+            padding: 20,
+            borderRadius: 10,
+            width: 300,
+            maxHeight: 400,
+            overflowY: 'auto'
+          }}>
+
+            <h3 style={{ marginBottom: 10 }}>Seleccionar jugador</h3>
+
+            {usuarios.map(u => (
+              <div
+                key={u.usuario_id}
+                style={{
+                  padding: 8,
+                  borderBottom: '1px solid #333',
+                  cursor: 'pointer'
+                }}
+                onClick={() => agregarJugadorManual(u, mostrarSelector)}
+              >
+                {u.nombre}
+              </div>
+            ))}
+
+            <button
+              style={{
+                marginTop: 10,
+                width: '100%',
+                padding: 6,
+                background: 'red',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer'
+              }}
+              onClick={() => setMostrarSelector(null)}
+            >
+              Cancelar
+            </button>
+
+          </div>
+        </div>
+      )}
 
       <button style={styles.deleteBtn} onClick={volver}>
         Volver
