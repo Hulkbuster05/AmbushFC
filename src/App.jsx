@@ -398,11 +398,12 @@ function PartidoCard({ partido, unirse, eliminarPartido, esAdmin, esModerador, v
   const [golesB, setGolesB] = useState(0)
   const [jugadoresA, setJugadoresA] = useState([])
   const [jugadoresB, setJugadoresB] = useState([])
+  const [miEquipo, setMiEquipo] = useState(null)
 
   const cargarConteo = async () => {  
   const { data } = await supabase
     .from('partido_jugadores')
-    .select('equipo, nombre')
+    .select('equipo, nombre, usuario_id')
     .eq('partido_id', partido.id)
 
   setConteo({
@@ -423,6 +424,14 @@ const listaGoles = goles || []
 
 setGolesA(listaGoles.filter(g => g.equipo === 'A').length)
 setGolesB(listaGoles.filter(g => g.equipo === 'B').length)
+
+const { data: userData } = await supabase.auth.getUser()
+const user = userData.user
+
+const miRegistro = data.find(j => j.usuario_id === user.id)
+
+setMiEquipo(miRegistro?.equipo || null)
+
 }
 
 useEffect(() => {
@@ -485,11 +494,33 @@ useEffect(() => {
   </div>
 </div>
 
+{/* 🔥 ESTADO DEL USUARIO */}
+<div style={{
+  textAlign: 'center',
+  marginBottom: 6,
+  fontSize: 12,
+  fontWeight: 'bold',
+  padding: '4px 6px',
+  borderRadius: 6,
+  background:
+    miEquipo === 'A'
+      ? '#007bff55'
+      : miEquipo === 'B'
+      ? '#ff4d4d55'
+      : '#ffffff22'
+}}>
+  {miEquipo === 'A' && '🔵 Estás en BLUE'}
+  {miEquipo === 'B' && '🔴 Estás en RED'}
+  {!miEquipo && '⚪ No estás en ningún equipo'}
+</div>
+
       <div style={styles.row}>
     <button
   style={{
     ...styles.blueBtn,
-    opacity: partido.estado === 'cerrado' ? 0.5 : 1
+    opacity: partido.estado === 'cerrado' ? 0.5 : 1,
+    border: miEquipo === 'A' ? '2px solid white' : 'none',
+    transform: miEquipo === 'A' ? 'scale(1.05)' : 'scale(1)'
   }}
   disabled={partido.estado === 'cerrado'}
   onClick={async () => {
@@ -531,14 +562,18 @@ useEffect(() => {
     cargarConteo()
   }}
 >
-  BLUE ({conteo.A}/{partido.jugadores})
+  {miEquipo === 'A'
+  ? `✔ BLUE (${conteo.A}/${partido.jugadores})`
+  : `BLUE (${conteo.A}/${partido.jugadores})`}
 </button>
 
     <button
   style={{
-    ...styles.redBtn,
-    opacity: partido.estado === 'cerrado' ? 0.5 : 1
-  }}
+  ...styles.redBtn,
+  opacity: partido.estado === 'cerrado' ? 0.5 : 1,
+  border: miEquipo === 'B' ? '2px solid white' : 'none',
+  transform: miEquipo === 'B' ? 'scale(1.05)' : 'scale(1)'
+}}
   disabled={partido.estado === 'cerrado'}
   onClick={async () => {
     if (partido.estado === 'cerrado') {
@@ -579,7 +614,9 @@ useEffect(() => {
     cargarConteo()
   }}
 >
-  RED ({conteo.B}/{partido.jugadores})
+  {miEquipo === 'B'
+  ? `✔ RED (${conteo.B}/${partido.jugadores})`
+  : `RED (${conteo.B}/${partido.jugadores})`}
 </button>
 </div>
 
